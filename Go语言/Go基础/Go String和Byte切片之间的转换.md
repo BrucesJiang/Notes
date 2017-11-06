@@ -5,7 +5,7 @@
 > Go的字符串是UTF-8编码的，每个字符长度是不确定的，可能是1,2,3或者4个字节结尾
 > 例如：
 >
-<pre><code>
+```Go
 package main
 
 import "fmt"
@@ -41,4 +41,4 @@ func main() {
 	// 每个字一个数值
 
 }
-</code></pre>
+```
