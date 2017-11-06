@@ -5,4 +5,4 @@
 > - [Go基础](./Go语言/Go基础)
 >> - [String和Byte切片之间的转换](./Go语言/Go基础/String和Byte切片之间的转换.md)
 >> - [Go 回调函数](./Go语言/Go基础/回调函数.md)
->> - [interface{}、断言和类型转换](./Go语言/Go基础/空接口,断言与类型转换.md)
+>> - [interface{}、断言和类型转换](./Go语言/Go基础/空接口断言与类型转换.md)
