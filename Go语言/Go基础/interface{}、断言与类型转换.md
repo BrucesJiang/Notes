@@ -1,0 +1,60 @@
+# interface{}、断言与类型转换
+***
+> ## 类型转换和类型断言
+> >Go语言要求所有统一表达式的不同类型之间必须做显式类型转换。
+> >
+> > **例外情况**
+> >>- 当普通T类型变量向I接口类型转换时是隐式的
+> >>- 当IX接口变量向I接口类型转换可以在编译期完成时是隐式的
+> >
+> 类型转换的例子
+```Go
+*Point(p)   //same as *(Point(p))
+(*Point)(p) //p is converted to *Point
+<-chan int(c) //same as <-(chan int(c))
+(<-chan int)(c) //c is converted to <-chan int
+func()(x)       // function signature func() x
+(func())(x)     // x is converted to func()
+(func() int)(x)  //x is converted to func() int 
+func() int(x)    //x is converted to func() int (unambiguous)
+```
+> 简单来说，x需要转化为T语法是T(x).
+> **interface{}**可用与向函数传递任何类型的变量，但是对于函数内部而言仍然是interface{}类型（空接口类型）
+> 
+> 下列代码
+```GO
+func echoArray(a interface{}){
+　　for _,v:=range a{ 
+　　　　fmt.Print(v," ")
+　　}
+　　fmt.Println()
+　　return
+}
+func main(){
+　　a:=[]int{2,1,3,5,4}
+　　echoArray(a)
+}
+```
+>上述代码报错原因是对于echoArray而言，a是interface{}类型，而不是[]int类型
+>修改为如下代码:
+```Go
+func echoArray(a interface{}){
+    b,_:=a.([]int)//通过断言实现类型转换
+　　for _,v:=range b{
+　　　　fmt.Print(v," ")
+　　}
+　　fmt.Println()
+　　return
+}　
+```
+>利用断言进行转换，最佳方式
+```Go
+b, ok := a.([]int)
+if ok {
+    ...
+}
+```
+>如果断言失败，ok 为true. 断言失败不会再编译器报错，只会导致运行时错误
+>
+> ## 参考文献
+> >[Go语言的类型转换和类型断言](http://my.oschina.net/chai2010/blog/161418)
