@@ -11,7 +11,7 @@ package main
 import "fmt"
 
 func main() {
-    
+
 	str1    := "abcd"
 	bytes1  := []byte(str1)
 	fmt.Println(bytes1) 
