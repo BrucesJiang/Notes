@@ -1,10 +1,11 @@
 # Go String和Byte切片之间的转换
 ***
 > String转换到Byte数组时，每个byte(byte本质就是uint8)保存字符串对应字节的数值
+> 
 > Go的字符串是UTF-8编码的，每个字符长度是不确定的，可能是1,2,3或者4个字节结尾
 > 例如：
 >
-```
+<pre><code>
 package main
 
 import "fmt"
@@ -40,4 +41,4 @@ func main() {
 	// 每个字一个数值
 
 }
-```
+</code></pre>
