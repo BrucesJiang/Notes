@@ -70,7 +70,7 @@ Output: NEXT
 NEXT[0] <- -1
 j <- 0
 k <- -1
-while j < M do 
+while j < M - 1 do  //注意这里的限界
     if k == -1 || P[j] == P[k] then
         NEXT[++j] <- ++k
     else 
@@ -83,7 +83,7 @@ Input: T,N,P,M,NEXT
 Output: Pos
 
 i <- 0
-j <- -1
+j <- 0 // 注意这里，一开始想的是错误的
 while i < N AND j < M do
     if j == -1 || P[i] == p[j] then
         i++; j ++
