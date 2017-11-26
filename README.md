@@ -31,8 +31,13 @@
 >>> - [例程goroutime](./Go语言/Go基础/并行/Go例程goroutime.md)
 >>> - [通道Channel](./Go语言/Go基础/并行/Go通道Channel.md)
 >>> - [通道缓冲](./Go语言/Go基础/并行/Go通道缓冲.md)
-
+>>> - [通道同步](./Go语言/Go基础/并行/Go通道同步.md)
+>>> - [通道方向](./Go语言/Go基础/并行/Go通道方向.md)
 ## 数据结构与算法
 > - [算法](./数据结构与算法/算法)
 >> - [字符串查找算法之KMP](/数据结构与算法/算法/字符串查找算法之KMP.md) 
 >> 
+>> 
+## Docker
+> - [Docker实践](./Docker实践)
+>> - [在17.10上安装配置Docker](/Docker/Docker实践/install-docker-on-Ubuntu1710.md)
