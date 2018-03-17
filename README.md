@@ -67,6 +67,8 @@
 >> - [对象和类](./Java/Java基础/对象和类.md)
 >> - 
 
+## 计算机科学基础
+> - [./计算机科学基础/原码反码补码.md]
 
 ## 优秀的编码插件
 [Arch Partow的网站， 一大批可靠的算法实现](http://www.partow.net/index.html)
