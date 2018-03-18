@@ -66,9 +66,10 @@
 >> - [修饰符](./Java/Java基础/修饰符.md)
 >> - [对象和类](./Java/Java基础/对象和类.md)
 >> - [Java通用方法规约](./Java/Java基础/Java通用方法规约.md)
+>> - [Java中的浮点数比较](./Java/Java基础/Java中的浮点数比较.md)
 
 ## 计算机科学基础
-> - [./计算机科学基础/原码反码补码.md]
+> - [原码、反码和补码](./计算机科学基础/原码反码补码.md)
 
 ## 优秀的编码插件
 [Arch Partow的网站， 一大批可靠的算法实现](http://www.partow.net/index.html)

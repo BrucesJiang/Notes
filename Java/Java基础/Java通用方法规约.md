@@ -45,7 +45,7 @@ hash（散列）可以理解为将数据有规则的分散开来。为何要分�
 | Boolean                | (v?1:0) |
 | byte\|char\|shrot\|int | (int)v |
 | Long                   | (int)(v^(v>>>32))|
-| Float                  | Float.vloatToIntBits(v)|
+| Float                  | Float.floatToIntBits(v)|
 | Double                 | Double.doubleToLongBits(v) |
 | String                 | s[0]\*31^(n-1) + s[1]\*31^(n-2) + ... + s[n-1] |
 | 数组                   | Arrays.hashCode |
