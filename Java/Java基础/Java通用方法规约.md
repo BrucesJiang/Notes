@@ -43,9 +43,38 @@ hash（散列）可以理解为将数据有规则的分散开来。为何要分�
 | 数据类型 | hash算法  |
 | :----------------------|:---------------|
 | Boolean                | (v?1:0) |
-| byte\|char\|shrot\|int\| (int)v |
+| byte\|char\|shrot\|int | (int)v |
 | Long                   | (int)(v^(v>>>32))|
 | Float                  | Float.vloatToIntBits(v)|
 | Double                 | Double.doubleToLongBits(v) |
 | String                 | s[0]\*31^(n-1) + s[1]\*31^(n-2) + ... + s[n-1] |
 | 数组                   | Arrays.hashCode |
+
+## Object.clone()
+创建并返回当前实例的副本。
+
+### clone方法规约
+1. 对于任意实例`x`, `x.clone() != x`
+2. 对于任意实例`x`, `x.clone().equals(x)`
+
+需要注意的是`Object.clone`是`proctected`方法，要实现克隆必须重写该方法并实现 `Cloneable(空接口，仅作为标识)`，否则会抛出`CloneNotSupportedException`例外。
+
+## Comparable.compareTo(T)
+实现了`Comparable`接口的类的实例可以互相比较大小， `compareTo`方法返回负整数、0和正整数对英语当前实例小于、等于喝大于指定实例
+
+实现该方放用于数组或集合元素的排序，例如：
+- java.util.Arrays.sort(Object[]) (该方法在排序时会将元素强制转换为**Comparable**，如果没有实现**Comparable**接口的方法，则会抛出转换异常)
+- java.util.Collections的方法`<T extends Comparable<? super T>> void sort(List<T> list)`
+
+### compareTo方法规约
+1. `x.compareTo(y) == y.compareTo(x)`, 如果`x.compareTo(y)`抛出异常则`y.compareTo(x)`也应该抛出异常
+2. `传递性`： 如果`x.compareTo(y)>0 && y.compareTo(z) > 0`为真，则`x.compareTo(z) > 0`为真
+3. 如果`x.compareTo(y) == 0`，则`x.compareTo(z) == y.compareTo(z)` 
+4. 强烈推荐但是非必需`(x.compareTo(y) == 0) == (x.equals(y))`
+
+与`Comparable`功能相似的接口有`Comparator`，区别是前者需要在类内部实现`Comparable`接口，而`Comparator`通常是作为函数式接口（`@FunctionalInterface`）使用。
+
+## Object.toString()
+返回当前实例的String表示格式
+
+Object.toString()方法的默认返回格式为`className + \'@\' + 十六进制的hashCode`,也就是 `getClass().getName() + \`@\` + Integer.toHexString(hashCode())`
