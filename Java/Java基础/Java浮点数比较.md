@@ -130,5 +130,7 @@ public boolean isEqual(double a, double b) {
 
 ## 引用
 [http://www.radford.edu/aaray/ITEC_352/Lectures_files/ITEC352-Lecture08.pptx](http://www.radford.edu/aaray/ITEC_352/Lectures_files/ITEC352-Lecture08.pptx)
+
 [http://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.6.2](http://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.6.2)
+
 [http://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.21.1](http://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.21.1)
