@@ -77,4 +77,4 @@ hash（散列）可以理解为将数据有规则的分散开来。为何要分�
 ## Object.toString()
 返回当前实例的String表示格式
 
-Object.toString()方法的默认返回格式为`className + \'@\' + 十六进制的hashCode`,也就是 `getClass().getName() + \`@\` + Integer.toHexString(hashCode())`
+Object.toString()方法的默认返回格式为`className + @+ 十六进制的hashCode`,也就是 `getClass().getName() + @ + Integer.toHexString(hashCode())`
