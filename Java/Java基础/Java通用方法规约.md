@@ -72,7 +72,7 @@ hash（散列）可以理解为将数据有规则的分散开来。为何要分�
 3. 如果`x.compareTo(y) == 0`，则`x.compareTo(z) == y.compareTo(z)` 
 4. 强烈推荐但是非必需`(x.compareTo(y) == 0) == (x.equals(y))`
 
-与`Comparable`功能相似的接口有`Comparator`，区别是前者需要在类内部实现`Comparable`接口，而`Comparator`通常是作为函数式接口（`@FunctionalInterface`）使用。
+与`Comparable`功能相似的接口有`Comparator`，区别是前者需要在类内部实现`Comparable`接口，而`Comparator`通常是作为方法式接口（`@FunctionalInterface`）使用。
 
 ## Object.toString()
 返回当前实例的String表示格式

@@ -64,7 +64,7 @@ public static void main(String[] args){
 ## Comparator接口
 `Comparator`位于`java.util`包下。如果需要控制某个类实例对象的次序，而类本身不支持排序(也就是说类没有实现Comparable接口)，我们可以创建一个该类的外部比较器来实现排序功能。此时，通过comparator接口就可以是实现一个外部比较器。
 
-如果引用的为第三方jar包，这时候，没办法改变类本身，可是使用这种方式。Comparator是一个专用的比较器，当这个对象不支持自比较或者自比较函数不能满足要求时，可写一个比较器来完成两个对象之间大小的比较。
+如果引用的为第三方jar包，这时候，没办法改变类本身，可是使用这种方式。Comparator是一个专用的比较器，当这个对象不支持自比较或者自比较方法不能满足要求时，可写一个比较器来完成两个对象之间大小的比较。
 
 Comparator体现了一种 **策略模式(strategy design pattern)**，就是不改变对象自身，而用一个策略对象(strategy object)来改变它的行为。
 
@@ -128,7 +128,7 @@ public static void main(String[] args){
 
 
 ## 比较
-从上述定义和代码示例可以发现：`Comparable`对实现它的类的实例对象进行整体排序，而`Comparator`是一个专用比较器，当某个对象不支持自比较或者比较函数不能满足排序要求是，可以通过`Comparator`实现一个专用比较器来实现两个对象之间大小的比较。我们可以说，`Compoarator`通过策略模式(strategy design pattern)，在不改变对象自身的情况，用一个策略对象(strategy object)来改变排序对象的行为。例如，在用`Collections`类的`sort`方法进行排序时，如果自定义类不指定排序器(通过实现Comparator)，那么就会执行**自然顺序排序**。如下列Collections API: `orts the specified list into ascending order, according to the natural ordering of its elements. All elements in the list must implement the Comparable interface`。 这里所谓的`自然顺序`就是实现 `Comparable`接口设定的排序方式。如果自定义类没有实现`Comparable`接口，那么就必须指定排序器。
+从上述定义和代码示例可以发现：`Comparable`对实现它的类的实例对象进行整体排序，而`Comparator`是一个专用比较器，当某个对象不支持自比较或者比较方法不能满足排序要求是，可以通过`Comparator`实现一个专用比较器来实现两个对象之间大小的比较。我们可以说，`Compoarator`通过策略模式(strategy design pattern)，在不改变对象自身的情况，用一个策略对象(strategy object)来改变排序对象的行为。例如，在用`Collections`类的`sort`方法进行排序时，如果自定义类不指定排序器(通过实现Comparator)，那么就会执行**自然顺序排序**。如下列Collections API: `Sorts the specified list into ascending order, according to the natural ordering of its elements. All elements in the list must implement the Comparable interface`。 这里所谓的`自然顺序`就是实现 `Comparable`接口设定的排序方式。如果自定义类没有实现`Comparable`接口，那么就必须指定排序器。
 
 若一个类实现了Comparable 接口，实现 Comparable 接口的类的对象的 List 列表 ( 或数组)可以通过 Collections.sort（或 Arrays.sort）进行排序。此外，实现 Comparable 接口的类的对象 可以用作 “有序映射 ( 如 TreeMap)” 中的键或 “有序集合 (TreeSet)” 中的元素，而不需要指定比较器。
 
