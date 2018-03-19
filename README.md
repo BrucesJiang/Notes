@@ -66,6 +66,7 @@
 >> - [运算符](./Java/Java基础/运算符.md)
 >> - [修饰符](./Java/Java基础/修饰符.md)
 >> - [Java面向对象基础](./Java/Java基础/Java面向对象基础.md)
+>> - [动态绑定和静态绑定](./Java/Java基础/动态绑定和静态绑定.md)
 >> - [Java通用方法规约](./Java/Java基础/Java通用方法规约.md)
 >> - [Java中的浮点数比较](./Java/Java基础/Java浮点数比较.md)
 >> - [Java排序之Comparable与Comparator](./Java/Java基础/Java排序之Comparable与Comparator.md)
