@@ -60,6 +60,7 @@
 
 ## Java
 > - [Java基础](./Java/Java基础)
+>> - [10个面向对象理论](./Java/Java基础/10个面向对象理论.md)
 >> - [JDK、JRE和JVM](./Java/Java基础/JDK,JRE和JVM.md)
 >> - [基本语法单位](./Java/Java基础/基本语法单位.md)
 >> - [数据类型](./Java/Java基础/数据类型.md)
