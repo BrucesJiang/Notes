@@ -16,5 +16,5 @@ Java生态相关的知识笔记。
 > 
 > 
 ## Java消息中间件
-> - [ActiveMQ]()
->> - [概述]()
+> - [ActiveMQ](./消息中间件ActiveMQ)
+>> - [概述](./消息中间件ActiveMQ/01-概述.md)
