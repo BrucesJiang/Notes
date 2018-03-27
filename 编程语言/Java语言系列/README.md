@@ -13,6 +13,10 @@ Java生态相关的知识笔记。
 > - [Java通用方法规约](./Java基础/Java通用方法规约.md)
 > - [Java中的浮点数比较](./Java基础/Java浮点数比较.md)
 > - [Java排序之Comparable与Comparator](./Java基础/Java排序之Comparable与Comparator.md)
+> - [Java继承之重写](./Java基础/Java继承之重写.md)
+> - [Java中的异常处理](./Java基础/Java中的异常处理.md)
+> - [Java多异常捕获和重抛异常](./Java基础/Java多异常捕获和重抛异常.md)
+> - [Java异常使用TryWithResources](./Java基础/Java异常使用TryWithResources.md)
 > 
 > 
 ## Java消息中间件
