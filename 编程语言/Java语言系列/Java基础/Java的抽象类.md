@@ -82,4 +82,4 @@ public class Employee extends Person {
 - 
 如果有`main()`方法，我们可以象其他任何类一样在java中运行抽象类。
 
-![Abstract class in Java](https://www.journaldev.com/1582/abstract-class-in-java?utm_source=website&utm_medium=sidebar&utm_campaign=Core-Java-Sidebar-Widget)
+[Abstract class in Java](https://www.journaldev.com/1582/abstract-class-in-java?utm_source=website&utm_medium=sidebar&utm_campaign=Core-Java-Sidebar-Widget)
