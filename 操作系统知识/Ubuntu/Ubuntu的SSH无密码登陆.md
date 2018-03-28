@@ -40,7 +40,7 @@ $ sudo nano /etc/ssh/sshd_config
 ```
 
 按照下图所示去掉几行注释并进行一些赋值
-![openssh-server](./images/openssh-server.md)
+![openssh-server](./images/openssh-server.png)
 
 ## 4. 重启SSH服务
 最后，在我们配置完SSH服务端后，为了使改动生效我们需要重启SSH服务。在终端或控制台运行以下命令重启。
@@ -51,3 +51,15 @@ $ sudo service ssh restart
 $ sudo /etc/init.d/ssh restart
 ```
 这样就可以不用密码仅用密钥对的方式登录ssh服务端
+
+## 设置当前用户免密sudo
+使用visudo打开sudoers/或vim打开 /etc/sudoers 两个是同一个文件
+
+```shell
+$ sudo visudo
+```
+在最后一行添加NOPASSWD:
+```shell
+ub ALL = (ALL:ALL) NOPASSWD: ALL
+```
+保存，退出，重新登陆
