@@ -2,7 +2,7 @@
 
 - [Byteball简介](./Byteball简介.md)
 - [基础知识之名词解释](./基础知识之名词解释.md)
-
+- [Decentralization的理解](./Decentralization的理解.md)
 
 资源介绍
 - [比特币论文-英文版](https://bitcoincore.org/bitcoin.pdf)
