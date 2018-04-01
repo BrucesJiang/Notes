@@ -22,3 +22,5 @@ Highlight some points where these three majorly differ.
 
 
 区块链是政治去中心化（没人控制区块链）、结构去中心化（没有基础设施性的中心失败点）的，但是在逻辑上是中心化的（有一个公认的状态，整个系统行为就像一个计算机一样）。
+
+上述网络模型，出自[Paul Baran的文章On Distributed Communications](./papers/on distributed communications networks-Paul-Baran-1964.pdf)
