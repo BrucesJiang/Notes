@@ -21,6 +21,12 @@ Java生态相关的知识笔记。
 > - [Java中的异常处理](./Java基础/Java中的异常处理.md)
 > - [Java多异常捕获和重抛异常](./Java基础/Java多异常捕获和重抛异常.md)
 > - [Java异常使用TryWithResources](./Java基础/Java异常使用TryWithResources.md)
+> - 
+> - 
+> - [Java Collection](./Java基础/collection)
+>> - [HashMap的常用方法](./Java基础/collection/HashMap的常用方法.md)
+>> - [Java集合之Map](./Java基础/collection/Java集合之Map.md)
+>> - [Java Collection之深入理解HashMap](./Java基础/collection/Java Collection之深入理解HashMap.md)
 > 
 > 
 ## Java消息中间件

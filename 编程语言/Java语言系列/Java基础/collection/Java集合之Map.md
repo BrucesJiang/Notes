@@ -85,8 +85,9 @@ Collections.sort(list, new Comparator(){
 });
 ```
 我们同样可以使用`SortedMap`解决这个问题，但是这里要求所有的Value都是唯一的。
+
 5. Initialize a static/immutable Map
-When you expect a map to remain constant, it's a good practice to copy it into an immutable map. Such defensive programming techniques will help you create not only safe for use but also safe for thread maps.
+When you expect a map to remain constant, it's a good practice to copy it into an immutable map. Such defensive programming techniques （防御性编程技术） will help you create not only safe for use but also safe for thread maps.
 
 To initialize a static/immutable map, we can use a static initializer (like below). The problem of this code is that, although map is declared as static final, we can still operate it after initialization, like `Test.map.put(3,"three");`. Therefore it is not really immutable. To create an immutable map using a static initializer, we need an extra anonymous class and copy it into an unmodifiable map at the last step of initialization. Please see the second piece of code. Then, an `UnsupportedOperationException` will be thrown if you run `Test.map.put(3,"three");`
 
@@ -131,7 +132,7 @@ A more complete comparison is
 |implementation   | buckets | buckets   | red-black tree |
 
 7. A Map with reverse view/lookup
-Sometimes, we need a set of key-key pairs, which means the map's values are unique as well as keys (one-to-one map). This constraint enables to create an "inverse lookup/view" of a map. So we can look up a key by its value. Such data structure is called [bidirectional map](https://en.wikipedia.org/wiki/Bidirectional_map), which unfortunately is not supported by JDK.
+Sometimes, we need a set of key-key pairs, which means the map's values are unique as well as keys (one-to-one map). This constraint enables to create an "inverse lookup/view" of a map. So we can look up a key by its value. Such data structure is called [bidirectional map](https://en.wikipedia.org/wiki/Bidirectional_map), which unfortunately is not supported by JDK. 
 
 Both Apache Common Collections and Guava provide implementation of bidirectional map, called BidiMap and BiMap, respectively. Both enforce the restriction that there is a 1:1 relation between keys and values.
 
