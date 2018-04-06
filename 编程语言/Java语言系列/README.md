@@ -26,7 +26,7 @@ Java生态相关的知识笔记。
 > - [Java Collection](./Java基础/collection)
 >> - [HashMap的常用方法](./Java基础/collection/HashMap的常用方法.md)
 >> - [Java集合之Map](./Java基础/collection/Java集合之Map.md)
->> - [Java Collection之深入理解HashMap](./Java基础/collection/Java Collection之深入理解HashMap.md)
+>> - [Java Collection之深入理解HashMap](./Java基础/collection/JavaCollection之深入理解HashMap.md)
 > 
 > 
 ## Java消息中间件
