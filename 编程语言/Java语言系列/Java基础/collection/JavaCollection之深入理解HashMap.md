@@ -156,13 +156,18 @@ static int indexFor(int h, int length) {
 
 HashMap的put方法执行过程可以通过下图来理解：
 
-![hashMap put方法执行流程图](./images/hashMap put方法执行流程图.png)
+![hashMap put方法执行流程图](./images/hashMap-put方法执行流程图.png)
 
 > (1) 判断`table`是否为空或null，是则执行`resize`扩容处理
+> 
 > (2) 根据Key计算hash值得到插入的索引位置`i`，如果`table[i] == null`，直接新建节点并添加，转向到(6)； 如果`table[i] != null`，转向到(3)
+> 
 > (3) 判断`table[i]`的首个元素与key是否相同，如果相同直接覆盖value，否则转向到(4)。这里的相同是指hashCode()和equals()判断相等。
+> 
 > (4) 判断`table[i]`是否为`treeNode`，即`table[i]`是否为红黑树的根节点。如果是红黑树，则直接在树中插入键值对，否则转向到(5)
+> 
 > (5) 遍历`table[i]`，判断链表长度是否大于`8`。如果大于`8`，将链表转换为红黑树，并在红黑树中插入操作；否则进行链表插入操作；遍历过程中，如果发现key已经存在，则直接进行value覆盖
+> 
 > (6) 插入成功后，判断实际存在的键值对数量`size`是否超过最大容量`threshold`。如果超过，进行`resize`扩容操作。
 
 源代码以及相关注释如下：
@@ -287,15 +292,15 @@ newTable[i]的引用赋给了e.next，也就是使用了单链表的头插入方
 
 下面我们讲解下JDK1.8做了哪些优化。经过观测可以发现，我们使用的是2次幂的扩展(指长度扩为原来2倍)，所以，元素的位置要么是在原位置，要么是在原位置再移动2次幂的位置。看下图可以明白这句话的意思，n为table的长度，图（a）表示扩容前的key1和key2两种key确定索引位置的示例，图（b）表示扩容后key1和key2两种key确定索引位置的示例，其中hash1是key1对应的哈希与高位运算结果。
 
-![hashMap 1.8 哈希算法例图1](./images/hashMap 1.8 哈希算法例图1.png)
+![hashMap 1.8 哈希算法例图1](./images/hashMap-1.8-哈希算法例图1.png)
 
 元素在重新计算hash之后，因为n变为2倍，那么n-1的mask范围在高位多1bit(红色)，因此新的index就会发生这样的变化：
 
-![hashMap 1.8 哈希算法例图2](./images/hashMap 1.8 哈希算法例图2.png)
+![hashMap 1.8 哈希算法例图2](./images/hashMap-1.8-哈希算法例图2.png)
 
 因此，我们在扩充HashMap的时候，不需要像JDK1.7的实现那样重新计算hash，只需要看看原来的hash值新增的那个bit是1还是0就好了，是0的话索引没变，是1的话索引变成“原索引+oldCap”，可以看看下图为16扩充为32的resize示意图：
 
-![jdk1.8 hashMap扩容例图](./images/jdk1.8 hashMap扩容例图.png)
+![jdk1.8 hashMap扩容例图](./images/jdk1.8-hashMap扩容例图.png)
 
 这个设计确实非常的巧妙，既省去了重新计算hash值的时间，而且同时，由于新增的1bit是0还是1可以认为是随机的，因此resize的过程，均匀的把之前的冲突的节点分散到新的bucket了。这一块就是JDK1.8新增的优化点。有一点注意区别，JDK1.7中rehash的时候，旧链表迁移新链表的时候，如果在新表的数组索引位置相同，则链表元素会倒置，但是从上图可以看出，JDK1.8不会倒置。有兴趣的同学可以研究下JDK1.8的resize源码，写的很赞，如下:
 
@@ -422,19 +427,19 @@ public class HashMapInfiniteLoop {
 
 通过设置断点让线程1和线程2同时debug到transfer方法(3.3小节代码块)的首行。注意此时两个线程已经成功添加数据。放开thread1的断点至transfer方法的“Entry next = e.next;” 这一行；然后放开线程2的的断点，让线程2进行resize。结果如下图。
 
-![jdk1.7 hashMap死循环例图1](./images/jdk1.7 hashMap死循环例图1.png)
+![jdk1.7 hashMap死循环例图1](./images/jdk1.7-hashMap死循环例图1.png)
 
 注意，Thread1的 e 指向了key(3)，而next指向了key(7)，其在线程二rehash后，指向了线程二重组后的链表。
 
 线程一被调度回来执行，先是执行 newTalbe[i] = e， 然后是e = next，导致了e指向了key(7)，而下一次循环的next = e.next导致了next指向了key(3)。
 
-![jdk1.7 hashMap死循环例图2](./images/jdk1.7 hashMap死循环例图2.png)
+![jdk1.7 hashMap死循环例图2](./images/jdk1.7-hashMap死循环例图2.png)
 
-![jdk1.7 hashMap死循环例图3](./images/jdk1.7 hashMap死循环例图3.png)
+![jdk1.7 hashMap死循环例图3](./images/jdk1.7-hashMap死循环例图3.png)
 
 e.next = newTable[i] 导致 key(3).next 指向了 key(7)。注意：此时的key(7).next 已经指向了key(3)， 环形链表就这样出现了。
 
-![jdk1.7 hashMap死循环例图4](./images/jdk1.7 hashMap死循环例图4.png)
+![jdk1.7 hashMap死循环例图4](./images/jdk1.7-hashMap死循环例图4.png)
 
 于是，当我们用线程一调用map.get(11)时，悲剧就出现了——Infinite Loop。
 
