@@ -138,4 +138,6 @@ A structural modification is any operation that adds or deletes one or more mapp
 
 总之，作为HashMap子类的LinkedHashMap与HashMap功能及其相似，LinkedHashMap所有的更改也是为了维护本身具有访问顺序的双向链表。
 
-注意： `[ConcurrentModificationException with LinkedHashMap类似的问题](https://stackoverflow.com/questions/16180568/concurrentmodificationexception-with-linkedhashmap/16180833)`
+注意： 
+
+[ConcurrentModificationException with LinkedHashMap类似的问题](https://stackoverflow.com/questions/16180568/concurrentmodificationexception-with-linkedhashmap/16180833)
