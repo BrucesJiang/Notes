@@ -15,4 +15,8 @@
 - [Byteball官网](https://byteball.org/)
 - [比特币官网](https://bitcoin.org/en/)
 - [以太坊-Github](https://github.com/ethereum)
-- 
+
+
+
+技术文章(./技术文章搜集)
+- [区块链基础设施纵览：基本框架原则——揭示存储、计算和通信元素](./技术文章搜集/区块链基础设施纵览.md)
