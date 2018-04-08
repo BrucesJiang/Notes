@@ -13,3 +13,8 @@
 ## 优秀的编码插件
 [Arch Partow的网站， 一大批可靠的算法实现](http://www.partow.net/index.html)
 [Best Square Root Method - Algorithm - Function (Precision VS Speed)](https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi#_articleTop)
+
+
+## 优秀的Java技术网站
+
+[CodeFx](https://blog.codefx.org/)
