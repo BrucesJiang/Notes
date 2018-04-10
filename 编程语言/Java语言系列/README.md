@@ -23,6 +23,7 @@ Java生态相关的知识笔记。
 > - [Java异常使用TryWithResources](./Java基础/Java异常使用TryWithResources.md)
 > - [Java字符串String StringBuffer StringBuilder](./Java基础/Java字符串StringStringBufferStringBuilder.md)
 > - [Java String深入理解之一](./Java基础/JavaString深入理解之一.md)
+> - [Java类之Object](./Java基础/Java类之Object.md)
 > - 
 > - [Java Collection](./Java基础/collection)
 >> - [HashMap的常用方法](./Java基础/collection/HashMap的常用方法.md)

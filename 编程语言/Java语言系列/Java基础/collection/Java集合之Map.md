@@ -1,5 +1,5 @@
 # Java集合之Map
-Map是最重要的数据结构。Java为数据结构中符号表(Key-Value)定义了一个接口`java.util.Map`，这个接口主要有四个常用的实现类，分别是`HashMap, Hashtable,LinkedHashMap和TreeMap`，类继承体系如下图所示：
+**符号表（Map）**是最重要的数据结构。Java为数据结构中符号表(Key-Value)定义了一个接口`java.util.Map`，这个接口主要有四个常用的实现类，分别是`HashMap, Hashtable,LinkedHashMap和TreeMap`，类继承体系如下图所示：
 
 ![Map的类继承](./images/map.png)
 
