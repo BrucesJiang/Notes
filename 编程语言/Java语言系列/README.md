@@ -1,7 +1,6 @@
 ## Java
 Java生态相关的知识笔记。
 
-## Java基础
 > - [10个面向对象理论](./Java基础/10个面向对象理论.md)
 > - [JDK、JRE和JVM](./Java基础/JDK,JRE和JVM.md)
 > - [基本语法单位](./Java基础/基本语法单位.md)
