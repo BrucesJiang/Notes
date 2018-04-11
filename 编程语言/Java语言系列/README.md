@@ -25,7 +25,8 @@ Java生态相关的知识笔记。
 > - [Java String深入理解之一](./Java基础/JavaString深入理解之一.md)
 > - [Java类之Object](./Java基础/Java类之Object.md)
 > - 
-> - [Java Collection](./Java基础/collection)
+>  
+### [Java Collection](./Java基础/collection)
 >> - [Java Collection Framework 综述](./Java基础/collection/Java集合类框架.md)
 >> - [Java集合之Map](./Java基础/collection/Java集合之Map.md)
 >> - [HashMap的常用方法](./Java基础/collection/HashMap的常用方法.md)
@@ -33,10 +34,15 @@ Java生态相关的知识笔记。
 >> - [Java Collection之Hashtable使用与原理](./Java基础/collection/JavaCollection之深入理解Hashtable.md)
 >> - [Java Collection之LinkedHashMap使用与原理](./Java基础/collection/JavaCollection之深入理解LinkedHashMap.md)
 >> - [Java Collection之TreeMap工作原理与实现](./Java基础/collection/JavaCollection之TreeMap工作原理与实现.md)
+>> - [Java集合之Set]()
 >> - [Java集合之List](./Java基础/collection/Java集合之List.md)
 >> - [Java集合之Queue]()
->> - [Java集合之Set]()
+>
 > 
+### [Java技术文章](./Java基础/Java基础文章) 
+>> - [Java字符串常量池](./Java基础/Java基础文章/字符串常量池.md)
+>> - [Java 10 var关键字深度解读](./Java基础/Java基础文章/Java-10-var关键字深度解读.md)
+
 ## Java消息中间件
 > - [ActiveMQ](./消息中间件ActiveMQ)
 >> - [概述](./消息中间件ActiveMQ/01-概述.md)
