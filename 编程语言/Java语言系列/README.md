@@ -39,9 +39,9 @@ Java生态相关的知识笔记。
 >> - [Java集合之Queue]()
 >
 > 
-### [Java技术文章](./Java基础/Java基础文章) 
->> - [Java字符串常量池](./Java基础/Java基础文章/字符串常量池.md)
->> - [Java 10 var关键字深度解读](./Java基础/Java基础文章/Java-10-var关键字深度解读.md)
+### [Java技术文章](./Java基础/Java技术文章) 
+>> - [Java字符串常量池](./Java基础/Java技术文章/字符串常量池.md)
+>> - [Java 10 var关键字深度解读](./Java基础/Java技术文章/Java-10-var关键字深度解读.md)
 
 ## Java消息中间件
 > - [ActiveMQ](./消息中间件ActiveMQ)
