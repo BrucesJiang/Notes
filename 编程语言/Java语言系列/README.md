@@ -26,14 +26,16 @@ Java生态相关的知识笔记。
 > - [Java类之Object](./Java基础/Java类之Object.md)
 > - 
 > - [Java Collection](./Java基础/collection)
->> - [HashMap的常用方法](./Java基础/collection/HashMap的常用方法.md)
+>> - [Java Collection Framework 综述](./Java基础/collection/Java集合类框架.md)
 >> - [Java集合之Map](./Java基础/collection/Java集合之Map.md)
+>> - [HashMap的常用方法](./Java基础/collection/HashMap的常用方法.md)
 >> - [Java Collection之深入理解HashMap](./Java基础/collection/JavaCollection之深入理解HashMap.md)
 >> - [Java Collection之Hashtable使用与原理](./Java基础/collection/JavaCollection之深入理解Hashtable.md)
 >> - [Java Collection之LinkedHashMap使用与原理](./Java基础/collection/JavaCollection之深入理解LinkedHashMap.md)
 >> - [Java Collection之TreeMap工作原理与实现](./Java基础/collection/JavaCollection之TreeMap工作原理与实现.md)
 >> - [Java集合之List](./Java基础/collection/Java集合之List.md)
-> 
+>> - [Java集合之Queue]()
+>> - [Java集合之Set]()
 > 
 ## Java消息中间件
 > - [ActiveMQ](./消息中间件ActiveMQ)
