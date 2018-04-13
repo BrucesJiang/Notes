@@ -36,6 +36,7 @@ Java生态相关的知识笔记。
 >> - [Java集合之Set]()
 >> - [Java集合之List](./Java基础/collection/Java集合之List.md)
 >> - [Java集合之Queue]()
+>> - [Java容器工具类之Collections](./Java基础/collection/Java容器工具类之Collections.md)
 >
 > 
 ### [Java技术文章](./Java基础/Java技术文章) 
