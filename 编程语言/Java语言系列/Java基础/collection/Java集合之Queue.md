@@ -73,9 +73,9 @@ public interface Deque<E> extends Queue<E> {
 
 下表总结了上述12中方法：
 
-| | 第一个元素（头部） | 最后一个元素（尾部）|
-|:--:|:-------------:|:-------------:|:------------:|:------------:|
-|    | 抛出异常 | 特殊值 | 抛出异常 | 特殊值 |
-|插入| addFirst(e)   | offerFirst(e) | addLast(e)   | offerLast(e) |
-|移除| removeFirst() | pollFirst()   | removeLast() | pollLast()   |
-|检查| getFirst()    | peekFirst()   | getLast()    | peekLast()   |
+| #    | 第一个元素（头部） | 最后一个元素（尾部）|
+|:----:|:-------------:|:-------------:|:------------:|:------------:|
+|      | 抛出异常      | 特殊值        | 抛出异常     | 特殊值       |
+| 插入 | addFirst(e)   | offerFirst(e) | addLast(e)   | offerLast(e) |
+| 移除 | removeFirst() | pollFirst()   | removeLast() | pollLast()   |
+| 检查 | getFirst()    | peekFirst()   | getLast()    | peekLast()   |
