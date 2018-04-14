@@ -108,4 +108,66 @@ public interface Deque<E> extends Queue<E> {
 2. **LinkedList** 和 **ArrayQueue** 分别是 **Queue** 接口规约的`链式实现`和`顺序实现`。 另外还有优先队列 **PriorityQueue** 实现类。与之相对应的，我们也有能够保证线程安全的相应的实现类。例如，**ArrayBlockingQueue, ConcurrentLinkedDeque, ConcurrentLinkedQueue, DelayQueue, LinkedBlockingDeque, LinkedBlockingQueue, LinkedTransferQueue, PriorityBlockingQueue, PriorityQueue, SynchronousQueue** 等等。
 
 
+## ArrayDeque和LinkedList的分析
+我们将重源代码的角度分析这两个类的实现。更重要的是，这里将挑选我认为比较难以理解的部分重点分析。
+
+### ArrayDeque
+**ArrayDeque** 是 **Deque** 的顺序实现，很自然能够想到它的内部实现机制——一个Object数组来保存元素，分别使用head和tail指针来指示队列的头和尾。 具体定义如下：
+
+```java
+public class ArrayDeque<E> extends AbstractCollection<E>
+                           implements Deque<E>, Cloneable, Serializable
+{
+    transient Object[] elements; // non-private to simplify nested class access
+    transient int head;
+    transient int tail;
+
+    private static final int MIN_INITIAL_CAPACITY = 8;
+
+    private void allocateElements(int numElements) {
+        int initialCapacity = MIN_INITIAL_CAPACITY;
+        // Find the best power of two to hold elements.
+        // Tests "<=" because arrays aren't kept full.
+        if (numElements >= initialCapacity) {
+            initialCapacity = numElements;
+            initialCapacity |= (initialCapacity >>>  1);
+            initialCapacity |= (initialCapacity >>>  2);
+            initialCapacity |= (initialCapacity >>>  4);
+            initialCapacity |= (initialCapacity >>>  8);
+            initialCapacity |= (initialCapacity >>> 16);
+            initialCapacity++;
+
+            if (initialCapacity < 0)   // Too many elements, must back off
+                initialCapacity >>>= 1;// Good luck allocating 2 ^ 30 elements
+        }
+        elements = new Object[initialCapacity];
+    }
+
+    private void doubleCapacity() {
+        assert head == tail;
+        int p = head;
+        int n = elements.length;
+        int r = n - p; // number of elements to the right of p
+        int newCapacity = n << 1;
+        if (newCapacity < 0)
+            throw new IllegalStateException("Sorry, deque too big");
+        Object[] a = new Object[newCapacity];
+        System.arraycopy(elements, p, a, 0, r);
+        System.arraycopy(elements, 0, a, r, p);
+        elements = a;
+        head = 0;
+        tail = n;
+    }
+}
+```
+与其他很多地方不一样的是，**ArrayDeque**类的大部分属性都是默认访问权限的(Java 8)。 其中 `ArrayDeque`中`Object`数组的默认长度为`8`，这是我们后面重点讨论的地方，做所以这么设置是因为有利于做扩容处理。  **关于tail需要注意的一点是tail所在的索引位置是null值，在它前面的元素才是队列中排在最后的元素**。
+
+我们将重点关注 **Object[]**数组的扩容处理。在调整元素长度部分，**ArrayDeque** 采用了两个方法来实现。一个是 **allocateElements**，另一个是 **doubleCapacity** 。 **allocateElements** 方法用于构造函数中根据指定的参数设置初始数组的大小。而** doubleCapacity** 则用于当数组元素不足时做扩容处理。
+
+其中 **allocateElements** 方法中最容易让人困惑的地方是对 **initialCapacity**  移位和或运算。首先通过无符号右移1位，再与原来的数字做或运算，然后再右移2、4、8、16位。这么做的目的是使得最后生成的数字尽可能每一位都是1。很显然，如果这个数字是每一位都为1，后面再对这个数字加1的话，则生成的数字一定是2的若干次方，并且这个数字也肯定是大于 **numElements** 值的最小2的指数值。之所以这么做，是因为有了这个基础，如果后面应用过程中做扩容处理，我们会很容处理，并且即使这个增长下去也不会超过数据类型所能容纳的极限（整型所能容纳的极限）。比如说，有一个数组的长度比`Integer.MAX_VALUE`的一半要多几个元素，如果我们这个时候设置的值不是让它为2的整数次方，那么直接对它空间翻倍就导致空间不够了，但是我们完全可以设置足够空间来容纳的。 其实，最简单的理解就是： **之所以这么做，是因为我们可以通过这种方式找到一个尽可能与numElements接近的initialCapacity， 尽可能的节约空间资源，以免造成空间浪费**。
+
+有了前面的讨论，执行 **doubleCapacity** 扩展空间容量的时候左移一位，就将空间容量扩充一倍。如果长度超出了允许的范围，就会发生溢出，返回的结果就会成为一个负数。这就是为什么有`if (newCapacity < 0)`这一句来抛异常。
+
+### LinkedList 
+**LinkedList** 是 **Deque**的链式实现。最重要的是我们需要理解，它内部维护了一个**双向链表**。
 
