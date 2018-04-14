@@ -79,3 +79,33 @@ public interface Deque<E> extends Queue<E> {
 | 插入 | addFirst(e)   | offerFirst(e) | addLast(e)   | offerLast(e) |
 | 移除 | removeFirst() | pollFirst()   | removeLast() | pollLast()   |
 | 检查 | getFirst()    | peekFirst()   | getLast()    | peekLast()   |
+
+这个接口扩展了`Queue`接口。在将双端队列用作队列时，将得到FIFO（先进先出）行为。将元素添加到双端队列的末尾，从双端队列的开头删除元素。从`Queue`接口继承的方法安全等效`Deque`方法。如下表所示：
+
+| Queue 方法 | 等效 Deque方法  |
+|:----------:|:---------------:|
+| add(E e)   | addLast(E e)    |
+| offer(E e) | offerLaset(E e) |
+| remove()   | removeFirst()   |
+| poll()     | pollFirst()     |
+| element()  | getFirst()      |
+| peek()     | peekFirst()     |
+
+双端队列也可以用作LIFO（后进先出）。我们在使用该性质的时，应该优先使用该接口而不是遗留的`Stack`类。将双端队列用作堆栈时，元素被推入双端队列开头并从双端队列的开头弹出。堆栈方法完全等效于`Deque`方法，如下表所示：
+
+| 堆栈方法  | 等效 Deque 方法 |
+|:---------:|:---------------:|
+| push(E e) | addFirst(E e) 　|
+| pop()     | removeFirst()   |
+| peek()    | peekFirst()     |
+
+注意，在将双端队列用作队列或堆栈时，`peek`方法同样正常工作；无论哪种情况下，都从双端队列的开头抽取元素。
+
+## 常见的队列实现类
+下面我们介绍一些常见的具有FIFO性质的实现类。
+
+1. **LinkedList** 和 **ArrayDeque** 分别是 **Deque** 接口规约的`链式实现`和`顺序实现`。在要求线程安全的情况下，我们可以使用 **ConcurrentLinkedDeque** 或 **LinkedBlockingDeque** 实现类，其中 **LinkedBlockingDeque**是具有阻塞性质、线程安全的双端队列实现。
+2. **LinkedList** 和 **ArrayQueue** 分别是 **Queue** 接口规约的`链式实现`和`顺序实现`。 另外还有优先队列 **PriorityQueue** 实现类。与之相对应的，我们也有能够保证线程安全的相应的实现类。例如，**ArrayBlockingQueue, ConcurrentLinkedDeque, ConcurrentLinkedQueue, DelayQueue, LinkedBlockingDeque, LinkedBlockingQueue, LinkedTransferQueue, PriorityBlockingQueue, PriorityQueue, SynchronousQueue** 等等。
+
+
+
