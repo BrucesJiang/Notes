@@ -32,3 +32,50 @@ public interface Queue<E> extends Collection<E> {
 
 上面类图中的实现来自两个包`java.util`容器工具类包以及`java.util.concurrent`线程安全包。
 
+在讨论具体的实现类之前，我们首先讨论一个特殊接口——`Deque`（double ended queue（双端队列）），双端队列接口。`Deque` 作为一个接口，它规定了双端队列功能规约。`Deque`作为约定了一个双端队列的实现规约，也就是说，该类是对`Queue`接口规范的增强。深入分析`Deque`接口的源代码，我们会发现它包含了四部分功能的规约。
+1. 双向队列 `Deque`特定功能规约。
+2. 普通队列`Queue`功能规约。
+3. 普通栈`Stack`功能规约。
+4. 普通集合`Collection`功能规约。
+第3，4部分的方法告诉我们，`Deque`接口的实现类也可以被看作是栈`Stack`或普通的集合`Collection`来使用。这也是 **接口定义规约** 带来的好处。
+```java
+public interface Deque<E> extends Queue<E> {
+    void addFirst(E e);
+    void addLast(E e);
+    boolean offerFirst(E e);
+    boolean offerLast(E e);
+    E removeFirst();
+    E removeLast();
+    E pollFirst();
+    E pollLast();
+    E getFirst();
+    E peekFirst();
+    E peekLast();
+    boolean removeFirstOccurrence(Object o);
+    boolean removeLastOccurrence(Object o);
+    boolean add(E e);
+    boolean offer(E e);
+    E remove();
+    E poll();
+    E element();
+    E peek();
+    void push(E e);
+    E pop();
+    boolean remove(Object o);
+    boolean contains(Object o);
+    public int size();
+    Iterator<E> iterator();
+    Iterator<E> descendingIterator();
+}
+```
+
+此接口定义在双端队列两端访问元素的方法。提供插入、移除和检查元素的方法。每种方法都存在两种形式：一种形式在操作失败时抛出异常，另一种形式返回一个特殊值（null 或 false，具体取决于操作）。插入操作的后一种形式是专为使用有容量限制的 Deque 实现设计的；在大多数实现中，插入操作不能失败。
+
+下表总结了上述12中方法：
+
+| | 第一个元素（头部） | 最后一个元素（尾部）|
+|:--:|:-------------:|:-------------:|:------------:|:------------:|
+|    | 抛出异常 | 特殊值 | 抛出异常 | 特殊值 |
+|插入| addFirst(e)   | offerFirst(e) | addLast(e)   | offerLast(e) |
+|移除| removeFirst() | pollFirst()   | removeLast() | pollLast()   |
+|检查| getFirst()    | peekFirst()   | getLast()    | peekLast()   |
