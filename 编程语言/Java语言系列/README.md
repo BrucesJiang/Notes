@@ -35,7 +35,7 @@ Java生态相关的知识笔记。
 >> - [Java Collection之TreeMap工作原理与实现](./Java基础/collection/JavaCollection之TreeMap工作原理与实现.md)
 >> - [Java集合之Set]()
 >> - [Java集合之List](./Java基础/collection/Java集合之List.md)
->> - [Java集合之Queue]()
+>> - [Java集合之Queue](./Java基础/collection/Java集合之Queue.md)
 >> - [Java容器工具类之Collections](./Java基础/collection/Java容器工具类之Collections.md)
 >> - [Java容器工具类之Arrays](./Java基础/collection/Java容器工具类之Arrays.md)
 >
