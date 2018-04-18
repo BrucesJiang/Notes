@@ -17,3 +17,16 @@
 2. 使用`<context:component-scan/>`元素，该元素的功能是：启动包扫描功能，将被`@Controller`、`@Service`、`@Reposity`, `@Component`等注解修饰的类注册成为IOC容器的Bean。其中`base-package`属性指定了需要扫描的类包，类包及其递归子包中所有的类都会被处理。例如 `<context:component-scan base-package="org.controller"/>`
 
 
+Spring MVC 中用于参数绑定的注解有很多，都在`org.springframework.web.bind.annotation`包中，根据它们处理的`reqeust`的不同内容部分可以分为四类（常用类型）：
+
+- 处理`request body`部分的注解: `@RequestParam`, `@RequestBody` 
+- 处理`request uri`部分的注解： `@PathVariable`
+- 处理`request header`部分的注解：`@RequestHeader`, `@CookieValue`
+- 处理`attribute`类型的注解：`@SessionAttributes`, `@ModelAttribute`
+
+## @RequestMapping注解
+开发者需要在控制器内为每个请求动作指定相应的处理方法。`org.springframework.web.bind.annotation.RequestMapping`注解类型修饰的类或方法用以完成相应的动作。
+
+
+
+
