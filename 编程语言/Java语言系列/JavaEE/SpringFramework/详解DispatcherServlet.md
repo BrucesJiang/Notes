@@ -1,4 +1,4 @@
-# 详解前端控制器DispatcherServlet
+ # 详解前端控制器DispatcherServlet
 ##摘要
 本文意在解释前端控制器`DispatcherServlet`基本配置方式、通过源码分析其初始化组件以及组建的加载方式。
 
