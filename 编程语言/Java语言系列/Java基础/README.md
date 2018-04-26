@@ -40,6 +40,3 @@
 >> - [Java容器工具类之Arrays](./collection/Java容器工具类之Arrays.md)
 >
 > 
-### [Java技术文章](./Java技术文章) 
->> - [Java字符串常量池](./Java技术文章/字符串常量池.md)
->> - [Java 10 var关键字深度解读](./Java技术文章/Java-10-var关键字深度解读.md)
