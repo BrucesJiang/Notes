@@ -43,3 +43,12 @@ MVC框架底层机制：前端`Servlet`接收到用户请求后，通常会对�
 6. 根据返回的`ModelAndView`对象，选择一个合适的`ViewResolver`（视图解析器）返回给`DispatcherServlet`。
 7. `ViewResolver`结合`Model`和`View`来渲染视图
 8. 将视图渲染结果返回给客户端
+
+如下图所示：
+
+Spring MVC 执行流程图：
+
+![SpringMVC执行流程](./images/SpringMVC执行流程.png)
+
+Spring MVC执行时序图：
+![SpringMVC执行时序图](./images/SpringMVC执行时序图.png)
