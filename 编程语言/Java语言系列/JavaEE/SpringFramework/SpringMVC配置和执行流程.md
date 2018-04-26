@@ -46,9 +46,10 @@ MVC框架底层机制：前端`Servlet`接收到用户请求后，通常会对�
 
 如下图所示：
 
-Spring MVC 执行流程图：
+**Spring MVC 执行流程图：**
 
 ![SpringMVC执行流程](./images/SpringMVC执行流程.png)
 
-Spring MVC执行时序图：
+**Spring MVC执行时序图：**
+
 ![SpringMVC执行时序图](./images/SpringMVC执行时序图.png)
