@@ -204,3 +204,18 @@ public synchronized V get(Object key) {
 
 （4）遍历不同：HashMap仅支持Iterator的遍历方式，Hashtable支持Iterator和Enumeration两种遍历方式。
 
+
+### [HashMap 和 Hashtable 之间的不同?](http://stackoverflow.com/questions/40471/differences-between-hashmap-and-hashtable)
+Java中 [HashMap](http://docs.oracle.com/javase/8/docs/api/index.html?java/util/HashMap.html) 和 [Hashtable](http://docs.oracle.com/javase/8/docs/api/index.html?java/util/Hashtable.html)的不同是什么？
+
+非多线程应用中使用哪个更有效率？
+
+解决方案
+
+Java中HashMap和HashTable有几个不同点：
+
+1. Hashtable 是同步的，然而 HashMap不是。 这使得HashMap更适合非多线程应用，因为非同步对象通常执行效率优于同步对象。
+2. Hashtable 不允许 null 值和键。HashMap允许有一个 null 键和人一个 NULL 值。
+3. HashMap的一个子类是[LinkedHashMap](http://java.sun.com/javase/7/docs/api/java/util/LinkedHashMap.html)。所以，如果想预知迭代顺序（默认的插入顺序），只需将HashMap转换成一个LinkedHashMap。用Hashtable就不会这么简单。
+
+因为同步对你来说不是个问题，我推荐使用HashMap。如果同步成为问题，你可能还要看看 [ConcurrentHashMap](http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ConcurrentHashMap.html) 
