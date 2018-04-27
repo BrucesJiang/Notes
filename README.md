@@ -26,3 +26,4 @@
 - [CodeFx](https://blog.codefx.org/)
 - [Jakob Jenkov](http://tutorials.jenkov.com/)
 - [Java教程、简单的源代码示例包括各种框架和工具](https://www.programcreek.com/)
+- [Sample Code of Java, C and so on](http://www.java2s.com/)
