@@ -1,4 +1,4 @@
-# Java集合之Set
+ # Java集合之Set
 `java.util.Set`接口是`java.util.Collection`接口的一个自类型，是一个不包含任何重复元素的集合。更确切的说，`Set`中不存在一对元素`e1`和`e2`，使得`e1.equals(e2)`成立，并且至多包含一个`null`元素。就像它的名字一样，`Set`是对数学概念中集合的抽象。Java集合框架中`Set`的类继承体系如下图所示：
 
 ![Java Collection Set](./images/set.png)
