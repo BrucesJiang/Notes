@@ -213,3 +213,6 @@ public static int randInt(int min, int max) {
 ```
 请查看相关的[JavaDoc](http://docs.oracle.com/javase/8/docs/api/java/util/Random.html#nextInt-int-)。在实践中，[java.util.Random](http://docs.oracle.com/javase/8/docs/api/java/util/Random.html) 类总是优于 [java.lang.Math.random()](http://docs.oracle.com/javase/8/docs/api/java/lang/Math.html#random--)。
 特别是当标准库里有一个直接的API来完成这个工作，就没有必要重复制造轮子了
+
+
+## [API应用示例系列](http://www.importnew.com/18881.html)
