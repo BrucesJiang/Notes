@@ -28,8 +28,12 @@
 - [Java教程、简单的源代码示例包括各种框架和工具](https://www.programcreek.com/)
 - [Sample Code of Java, C and so on](http://www.java2s.com/)
 - [Go guide](http://programming.guide/go/index.html)
+- [Java并发编程网](http://ifeve.com/)
+
+## 优秀的社区
 - [Go 中文](https://studygolang.com/)
 - [ImportNew](http://www.importnew.com/)
 - [云栖社区](https://yq.aliyun.com/teams/111)
 - [IBM developerworks](https://www.ibm.com/developerworks)
 - [https://sourcemaking.com/](https://sourcemaking.com/)
+- [InfoQ](http://www.infoq.com/cn/)
