@@ -13,11 +13,15 @@
 ## Why：为什么使用Reactor模式？
 ### Part A:
 对于一个事件驱动的分布式日志登录服务系统，如下图1所示。
+
 ![reactor_1](./images/reactor_1.png)
+
 客户端应用通过日志服务来录入它们当前状态和记录，这些状态可记录可能包含了错误通知信息、断点调试信息等。日志记录被发送到一个中央日服务器上，该服务器可以处理日志和连接用户请求。客户端想要记录日志信息，首先必须发送一个连接请求给服务器。服务器通过一个“处理工厂”来监听客户端对应的地址信息，以等待这些连接请求的到来。当一个连接请求到来时，“处理工厂”就创建一个handle，其代表了连接的端点，用来建立客户端和服务器之间的连接。当handle收到来自客户端的请求连接时，就会返回给服务器。一旦客户端连接成功，它们就可以同时发送日志记录到服务器。
 ### Part B:
 或许最有效的方法来开发一个并发日志系统是使用多线程，这样可以同时处多个理客户端请求，如下图2所示。
+
 ![reactor_2](./images/reactor_2.png)
+
 然而，多线程实现这样的分布式日志系统可能会面临下面的问题：
 - 可用性：服务器必须能够处理传入请求即使是等待其他请求到达的。特别是，一个服务器不能无限期地处理任何单一来源的事件而排斥其他事件源。因为这可能大大延迟响应其他客户的时间。
 - 效率：一个服务器应该做到延迟最小化、吞吐量最大化，避免不必要地使用CPU。多线程可能会导致糟糕的性能由于上下文切换、同步和数据移动。
@@ -28,10 +32,15 @@
 针对上面的问题，可以集成同步多路分解事件并分发相应的事件处理程序来处理相应的事件。对于每一个应用程序所提供的服务，引入一个单独的事件处理器处理某些类型的事件。所有事件处理程序实现了相同的接口。事件处理程序注册一个初始调度程序，它使用一个同步事件信号分离器等待事件发生。当事件发生时，同步事件信号分离器通知初始调度器，它同步告知事件处理程序去关联对应的事件。事件处理程序然后分派事件到实现了所请求服务的方法中。
 
 上述日志系统的Reactor模式类图如下所示：
+
 ![reactor_3](./images/reactor_3.png)
+
 客户端连接到日志服务器所经过的一系列步骤如下图所示：
+
 ![reactor_4](./images/reactor_4.png)
+
 日志服务器记录日志所经过的一系列步骤如下图所示：
+
 ![reactor_5](./images/reactor_5.png)
 
 ## Where：什么场景下使用Reactor模式？
@@ -62,7 +71,9 @@
 在网络服务和分布式对象中，对于网络中的某一个请求处理，我们比较关注的内容大致为：读取请求( Read request)、 解码请求(Decode request)、处理服务(Process service)、 编码答复(Encode reply)、 发送答复(Send reply)。但是每一步对系统的开销和效率又不尽相同。
 ### A、Classic Service Design
 对于传统的服务设计，每一个到来的请求，系统都会分配一个线程去处理，这样看似合乎情理，但是，当系统请求量瞬间暴增时，会直接把系统拖垮。因为在高并发情况下，系统创建的线程数量是有限的。传统系统设计如下图所示：
+
 ![reactor_6](./images/reactor_6.png)
+
 传统的服务代码实现如下所示：
 ```java
 class Server implements Runnable {
@@ -104,6 +115,7 @@ class Server implements Runnable {
 显然，传统的一对一的线程处理无法满足新需求的变化。对此，考虑到了线程池的使用，这样就使得线程可以被复用，大大降低创建线程和销毁线程的时间。然而，线程池并不能很好满足高并发线程的需求，当海量请求到来时，线程池中的工作线程达到饱和状态，这时可能就导致请求被抛弃，无法完成客户端的请求。对此，考虑到将一次完整的请求切分成几个小的任务，每一个小任务都是非阻塞的；对于读写操作，使用NIO对其进行读写；不同的任务将被分配到与想关联的处理器上进行处理，每个处理器都是通过异步回调机制实现。这样就大大提供系统吞吐量，减少响应时间。这就是下面将要介绍的Reactor模式。
 ### Basic Reactor Design
  单线程版的Reactor模式如下图所示。对于客户端的所以请求，都又一个专门的线程去进行处理，这个线程无线循环去监听是否又客户的请求到来，一旦收到客户端的请求，就将其分发给响应的处理器进行处理。
+
  ![reactor_7](./images/reactor_7.png)
 
 #### Reactor 1: Setup
@@ -175,6 +187,7 @@ class Acceptor implements Runnable { // inner
 ```
 
 ![reactor_8](./images/reactor_8.png)
+
 #### Reactor 4: Handler setup
 从下方代码可看出，一个handler就是一个线程，其中的SocketChannel 被设置成非阻塞。默认在Selector上注册了读事件并绑定到SocketChannel 上。
 ```java
@@ -239,7 +252,9 @@ void send() throws IOException {
 ```
 ### C、Worker Thread Pools for Reactor
 考虑到工作线程的复用，将工作线程设计为线程池。工作线程使用线程池实现如下图所示。
+
 ![reactor_9](./images/reactor_9.png)
+
 在handler中使用线程池来处理任务。代码实现如下所示
 ```java
 //这里将具体的业务处理线程设置线程池，提供线程复用
@@ -289,6 +304,6 @@ Netty:
 - [http://www.coderli.com/tags/#Netty](http://www.coderli.com/tags/#Netty)
 
 ## 参考文献：
-[1] Doug Lea. Scalable IO in Java
-[2] DC Schmidt. Reactor: an object behavioral pattern for concurrent event demultiplexing and event handler dispatching.
-[3] [完全照搬自这篇文章： Reactor（反应器）模式初探](https://blog.csdn.net/pistolove/article/details/53152708)
+- [1] Doug Lea. Scalable IO in Java
+- [2] DC Schmidt. Reactor: an object behavioral pattern for concurrent event demultiplexing and event handler dispatching.
+- [3] [完全照搬自这篇文章： Reactor（反应器）模式初探](https://blog.csdn.net/pistolove/article/details/53152708)
