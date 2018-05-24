@@ -1,5 +1,5 @@
 # JUC之阻塞队列
-主要介绍了Java 8中的7种阻塞队列。
+主要介绍了Java 8中的7种阻塞队列，最后分析了一种阻塞队列的具体实现原理。
 
 ## JUC中的阻塞队列
 Java 8中提供了7中阻塞队列，如下：
@@ -135,4 +135,104 @@ public SynchronousQueue(boolean fait) {
 `SynchronousQueue`可以看成传球手角色，负责把生产者线程处理的数据直接传递给消费者线程。队列本身并不存储任何元素，非常适合传递性场景。`SynchronousQueue`的吞吐量高于`LinkedBlockingQueue`和`ArrayBlockQueue`。
 
 ## LinkedTransferQueue
+`LinkedTransferQueue`是一个由链表结构组成的无界阻塞`TransferQueue`队列。相对于其他阻塞队列，`LinkedTransferQueue`多了`tranfer`和`tryTranfer`方法。
+
+1. transfer方法： 如果当前消费者正在等待接收元素（消费者使用`take()`方法或带时间限制的`poll()`方法时），`transfer()`方法可以把生产者传入的元素立刻transfer（传输）给消费者。如果没有消费者在等待接收元素，`transfer`方法会将元素存放在队列的`tail`节点，并等到该元素被消费者消费了才返回。`transfer`方法的关键代码如下：
+
+```java
+Node pred = tryAppend(s, haveData);
+return awaitMatch(s, pred, e, (how == TIMED), nanos);
+```
+第一行代码试图将存放在当前元素的s节点作为tail节点。第二行代码让CPU自旋等带消费者消费元素。因为自旋会消耗CPU，所以自旋一定的次数后使用`Thread.yield()`方法来暂停当前正在执行的线程，并执行其他线程。
+
+2. tryTransfer方法: 用来试探生产者传入的元素是否能直接传给消费者。如果没有消费者等待接收元素，则返回false。和transfer方法的区别是tryTransfer方法无论消费者是否接收，方法立即返回，而transfer方法是必须等到消费者消费了才返回。 对于带有时间限制的tryTransfer(E e, long timeout, TimeUnit unit)方法，试图把生产者传入的元素直接传给消费者，但是如果没有消费者消费该元素则等待指定的时间再返回。如果超时还没有消费元素，则返回false。如果在超时时间内消费了元素，则返回true。
+
+## LinkedBlockingDeque
+`LinkedBlockingDeque`是一个由链表结构组成的双向阻塞队列。所谓双向队列指的是可以从队列两端插入和移除元素。双向队列因为多了一个操作队列的入口，在多线程同时入队时，也就减少了一半的竞争。相比于其他的阻塞队列，`LinkedBlockingDeque`多了`addFirst`,`addLast`，`offerFirst`，`offerLast`,`peekLast`等方法，以`First`单词结尾的方法，表示插入、获取(peek)或移除双端队列的第一个元素。以`Last`单词结尾的方法，表示插入、获取或移除双端队列的最最后一个元素。另外插入方法`add`等同于`addLast`,移除方法`remove`等效于`removeFirst`。但是`take`方法却等同于`takeFirst`。在初始化`LinkedBlockingDeque`时可以设置容量防止其过度膨胀。另外，双向阻塞队列可以运用在“工作窃取”模式中。
+
+## 阻塞队列的实现原理
+这里主要阐述了生产者和消费者进行高效通信的机理—— **通知模式** 实现。所谓通知模式，就是当生产者想满队列中添加元素时，生产者会被阻塞；当消费者消费了一个元素后，会通知生产者当前队列可用。以下是JDK中`ArrayBlockingQueue`的源码实现。它具体使用了`Condition`实现。
+
+```java
+private final Condition notFull;
+private final Condition notEmpty;
+
+public ArrayBlockingQueue(int capacity, boolean fair) {
+    //省略其他代码
+    notEmpty = lock.newCondition();
+    notFull = lock.newCondition();
+}
+
+public void put(E e) throws InterruptedException {
+    checkNotNull(e);
+    final ReentrantLock lock = this.lock();
+    lock.lockInterruptibly();
+    try{
+	while(count == items.length) {
+            notFull.await();//阻塞
+        }
+        insert(e); //执行插入
+    }finally{
+      lock.unlock();//释放锁
+    }
+     
+}
+
+private void insert(E x) {
+    items[putIndex] = x;
+    putIndex = inc(putIndex);
+    ++count;
+    notEmpty.signal();//通知
+}
+
+public E take() throws InterruptedException {
+    final ReentrantLock lock = this.lock(); //获取锁
+    lock.lockInterruptibly();
+    try{
+	while(count == 0) {
+           notEmpty.await(); //阻塞
+        }
+        reutrn extract(); //取数据
+    }finally{
+	lock.unlock(); //释放锁
+    }
+}
+
+```
+当向队列里插入一个元素时，如果队列不可用，那么阻塞生产者主要通过LockSupport.park(this)实现。
+
+```java
+public final void await() throws InterrruptedException {
+    if(Thread.interrupted()){
+        throw new InterruptedException();
+    }
+    Node node = addConditionWaiter();
+    int saveState = fullyRelease(node);
+    int interruptMode = 0;
+    while(!isOnSyncQueue(node)) {
+        LockSupport.park(this);
+        if((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+            break;
+    }
+    if(acquireQueued(node, savedState) && interruptMode != THROW_IE)
+         interruptMode = REINTERRUPT;
+    if(node.nextWaiter != null) //clean up if canlled
+         unlinkCancelledWaiters();
+    if(interruptAfterWait(interruptMode)
+         reportInterruptAfterWait(interruptMode);
+}
+
+
+public static void park(Object blocker) {
+    Thread t= Thread.currentThread();
+    setBlocker(t, blocker);
+    unsafe.park(false, 0L);
+    setBlocker(t, null);
+}
+```
+首先调用 `setBlocker` 保存将要阻塞的线程，然后调用`unsafe.park()`阻塞当前线程。其中`unsafe.park()`是一个`native`方法：
+
+```java
+public native park(boolean isAbsolute, long time);
+```
 
