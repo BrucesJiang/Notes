@@ -17,4 +17,78 @@ Fork/Join框架是Java 7提供的一个用于并行执行任务的框架，是�
 ## Fork/Join框架设计
 我们叙述Fork/Join框架原理时将其分为两个部分：分割和结果合并。
 
- 
+1. 分割任务 Fork类将大任务分割成子任务，有可能子任务还是很大，因此可能需要递归分割
+2. 执行子任务并合并结果 分割的子任务分别放在双端队列中，然后启动多个线程分别从双端队列中获取任务执行。子任务执行结果统一放在一个结果队列中，启动一个线程从结果队列中获取数据并合并为最终结果。
+
+Fork/Join框架提供两个基本类完成上述两件事情：
+
+1. ForkJoinTask: 使用ForkJoin框架，必须首先创建一个ForkJoin任务。它提供在任务中执行fork()和join()操作的机制。通常情况下，我们不需要直接继承ForkJoinTask类，只需要继承它的子类，Fork/Join框架提供了以下两个子类：
+    - RecursiveAction: 用于没有返回结果的任务
+    - RecursiveTask: 用于有返回结果的任务
+2. ForkJoinPool: ForkJoinTask需要通过ForkJoinPool来执行。
+
+任务分解后产生的子任务被添加到当前工作线程所维护的双端队列中，进入队列的头部。当一个工作线程的队列里暂时没有任务时，它会随机从其他工作线程的队列尾部获取要给任务处理。
+
+## 使用Fork/Join框架
+例如，对超过1000万个元素的数组进行排序。
+
+```java
+class SumTask extends RecursiveTask<Long> {
+
+    static final int THRESHOLD = 100;
+    long[] array;
+    int start;
+    int end;
+
+    SumTask(long[] array, int start, int end) {
+    		this.array = array;
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    protected Long compute() {
+        if (end - start <= THRESHOLD) {
+            // 如果任务足够小,直接计算:
+            long sum = 0;
+            for (int i = start; i < end; i++) {
+                sum += array[i];
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            		e.printStackTrace();
+            }
+            System.out.println(String.format("compute %d~%d = %d", start, end, sum));
+            return sum;
+        }
+        // 任务太大,一分为二:
+        int middle = (end + start) / 2;
+        System.out.println(String.format("split %d~%d ==> %d~%d, %d~%d", start, end, start, middle, middle, end));
+        SumTask subtask1 = new SumTask(this.array, start, middle);
+        SumTask subtask2 = new SumTask(this.array, middle, end);
+        invokeAll(subtask1, subtask2);
+        Long subresult1 = subtask1.join();
+        Long subresult2 = subtask2.join();
+        Long result = subresult1 + subresult2;
+        System.out.println("result = " + subresult1 + " + " + subresult2 + " ==> " + result);
+        return result;
+    }
+    
+    
+    public static void main(String[] args) throws Exception {
+    	// 创建随机数组成的数组:
+    	long[] array = new long[400];
+    	fillRandom(array);
+    	// fork/join task:
+    	ForkJoinPool fjp = new ForkJoinPool(4); // 最大并发数4
+    	ForkJoinTask<Long> task = new SumTask(array, 0, array.length);
+    	long startTime = System.currentTimeMillis();
+    	Long result = fjp.invoke(task);
+    	long endTime = System.currentTimeMillis();
+    	System.out.println("Fork/join sum: " + result + " in " + (endTime - startTime) + " ms.");
+	}
+}
+```
+关键代码是fjp.invoke(task)来提交一个Fork/Join任务并发执行，然后获得异步执行的结果。
+
