@@ -92,3 +92,14 @@ class SumTask extends RecursiveTask<Long> {
 ```
 关键代码是fjp.invoke(task)来提交一个Fork/Join任务并发执行，然后获得异步执行的结果。
 
+## Fork/Join框架的异常处理
+`ForkJoinTask`在执行时可能会抛出异常，但是我们没有办法在主线程里直接捕获，所以`ForkJoinTask`提供了`isCompletedAbnormally()`方法来检测任务是否已经抛出异常或被取消了。我们可以通过`ForkJoinTask`的`getException()`来获取异常：
+
+```java
+if(task.isCompletedAbnormally()) {
+		System.out.println(task.getException());
+}
+
+```
+`getException()`方法返回`Throwable`对象，如果任务被取消了则返回`CancellationException`。如果任务没有完成或没有抛出异常，则返回`null`。
+
