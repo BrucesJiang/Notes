@@ -22,13 +22,13 @@ j <- 0
 while i < N and j < M do
     if S[i] == P[j] then
         i ++ ; j ++
-    else 
+    else
         i = i - j + 1; j = 0
 end while
 
 if j == M then
   pos = i - j
-else 
+else
   pos = -1
 
 end if
@@ -73,7 +73,7 @@ k <- -1
 while j < M - 1 do  //注意这里的限界
     if k == -1 || P[j] == P[k] then
         NEXT[++j] <- ++k
-    else 
+    else
         k <- NEXT[k]
     end if
 end while
@@ -87,14 +87,14 @@ j <- 0 // 注意这里，一开始想的是错误的
 while i < N AND j < M do
     if j == -1 || P[i] == p[j] then
         i++; j ++
-    else 
+    else
         j <- NEXT[j]
     end if
 end while
 
 if j == M then
     pos <- i - j
-else 
+else
     pos <- -1
 end if
 ```
@@ -104,6 +104,3 @@ end if
 各种改进算法已经深入理解，后续再补充。
 
 2017/11/20
-
-
-

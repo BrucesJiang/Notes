@@ -21,6 +21,7 @@
 > - [Java异常使用TryWithResources](./Java异常使用TryWithResources.md)
 > - [Java字符串String StringBuffer StringBuilder](./Java字符串StringStringBufferStringBuilder.md)
 > - [Java String深入理解之一](./JavaString深入理解之一.md)
+> - [Java String深入理解之二](./JavaString深入理解之二.md)
 > - [Java类之Object](./Java类之Object.md)
 > - 
 >  
@@ -37,6 +38,4 @@
 >> - [Java集合之List](./collection/Java集合之List.md)
 >> - [Java集合之Queue](./collection/Java集合之Queue.md)
 >> - [Java容器工具类之Collections](./collection/Java容器工具类之Collections.md)
->> - [Java容器工具类之Arrays](./collection/Java容器工具类之Arrays.md)
->
-> 
+>> - [Java容器工具类之Arrays](./collection/Java容器工具类之Arrays.md) 
