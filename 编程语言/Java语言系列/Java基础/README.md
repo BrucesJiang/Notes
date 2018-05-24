@@ -23,7 +23,7 @@
 > - [Java String深入理解之一](./JavaString深入理解之一.md)
 > - [Java String深入理解之二](./JavaString深入理解之二.md)
 > - [Java类之Object](./Java类之Object.md)
-> - 
+> -
 >  
 ### [Java Collection](./collection)
 >> - [Java Collection Framework 综述](./collection/Java集合类框架.md)
@@ -39,3 +39,9 @@
 >> - [Java集合之Queue](./collection/Java集合之Queue.md)
 >> - [Java容器工具类之Collections](./collection/Java容器工具类之Collections.md)
 >> - [Java容器工具类之Arrays](./collection/Java容器工具类之Arrays.md) 
+>
+### [Java Concurrent](./JUC)
+>> -[Java Concurrent包综述](./JUC/JUC综述.md)
+>> -[JUC的阻塞队列概述](./JUC的阻塞队列概述.md)
+>> -[JUC之阻塞队列](./JUC/JUC之阻塞队列.md)
+
