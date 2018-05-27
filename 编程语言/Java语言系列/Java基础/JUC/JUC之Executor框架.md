@@ -21,3 +21,12 @@ Executor框架大致可以分为三个部分：
 - 任务的执行  包括任务执行机制的核心接口`Executor`，以及继承自`Executor`的`ExecutorService`接口。 `Executor`框架有两个关键类`ThreadPoolExecutor`和`ScheduledThreadPoolExecutor`实现了`ExecutorService`接口。
 - 异步计算的结果。 包括接口`Future`和实现`Future`接口的`FutureTask`类。
 
+Executor框架包含的主要的类和接口，如下图所示：
+
+![executor_framework_class_interface](./images/executor_framework_class_interface.png)
+
+- Executor是一个接口。
+
+
+
+![how_to_use_executor](./images/how_to_use_executor.png)
