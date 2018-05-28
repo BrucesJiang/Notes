@@ -114,6 +114,31 @@ public static <T> Callable<T> callable(Runnable task, T result)
 详细介绍三种`ThreadPoolExecutor`
 
 #### FixedThreadPool
+`FixedThreadPool`被称为可重用固定线程数量的线程池。源代码实现如下：
+
+```java
+public static ExecutorService newFixedThreadPool(int nThreads) {
+	return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+}
+```
+`FixedThreadPool`的`corePoolSize`和`maximumPoolSize`都被设置为创建`FixedThreadPool`时指定的参数`nThreads`。
+
+当线程池中的线程数大于`corePoolSize`时， `keepAliveTime`为多余的空闲线程等待新任务的最长时间，超过这个时间后多余的线程将被终止。这里将`keepAliveTime`设置为0L，意味着多余的空闲线程会立刻被终止。
+
+`FixedThreadPool`的`execute()`方法的运行示意图： 
+
+![fixedthreadpool_execute_flow](./images/fixedthreadpool_execute_flow.png)
+
+1. 如果当前运行线程少于`corePoolSize`，则创建新线程来执行任务
+2. 如果线程池完成预热后（当前运行的线程数等于`corePoolSize`)，将任务加入到`LinkedBlockingQueue`
+3. 线程执行完1中的任务后，会重复从`LinkedBlockingQueue`获取任务执行
+
+`FixedThreadPool`使用无界队列`LinkedBlockingQueue`作为线程池的工作队列（队列的容量为`Integer.MAX_VALUE`）。使用无界队列作为工作队列会对线程池带来如下影响：
+
+1. 线程池中的线程数量达到`corePoolSize`后，新任务将在无界队列中等待，因此线程池中的线程数量不会超过`corePoolSize`
+2. 由于1，使用无界队列时`maximumPoolSize`将是一个无效参数
+3. 由于1和2，使用无界队列时`keepAliveTime`将是一个无效参数
+4. 由于使用无界队列，运行中的`FixedThreadPool`（未执行方法`shutdown()`或`shutDownNow()`不会拒绝任务（不会调用`RejectedExceptionHandler.rejectedExeption`方法）
 
 #### SingleThreadExecutor
 
