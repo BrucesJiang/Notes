@@ -141,18 +141,136 @@ public static ExecutorService newFixedThreadPool(int nThreads) {
 4. 由于使用无界队列，运行中的`FixedThreadPool`（未执行方法`shutdown()`或`shutDownNow()`不会拒绝任务（不会调用`RejectedExceptionHandler.rejectedExeption`方法）
 
 #### SingleThreadExecutor
+`SingleThreadExecutor`是使用单个`worker`线程的`Executor`。源代码实现如下：
+
+```java
+public static ExecutorService newSingleThreadExecutor() {
+	return new FinalizableDelegatedExecutorService(new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>()))
+}
+```
+`SingleThreadExecutor`的`corePoolSize`和`maximumPoolSize`被设置为1。其他参数与`FixedThreadPool`相同。`SingleThreadExecutor`使用无界队列`LinkedBlockingQueue`作为线程池的工作队列（队列的容量为`Integer.MAX_VALUE`）。`SingleThreadExecutor`使用无界队列作为工作队列对线程池带来的影响与`FixedThreadPool`相同。
+
+`SingleThreadExecutor`的运行示意图：
+
+![singlethreadpool_execute_flow](./images/singlethreadpool_execute_flow.png)
+
+1. 如果当前运行的线程数量少于`corePoolSize`（即线程池中没有运行的线程），则创建一个新线程来执行任务。
+2. 在线程池完成预热后（当前线程池中有一个运行的线程），将任务加入`LinkedBlockingQueue`
+3. 线程执行完1中的任务后，会在一个无限循环中反复从`LinkedBlokcingQueue`获取任务来执行。
 
 #### CachedThreadPool
+`CachedThreadPool`是一个根据需要创建新线程的线程池。源代码如下：
+
+```java
+public static ExecutorService newCachedThreadPool() {
+	return new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+}
+```
+
+`CachedThreadPool`的`corePoolSize`被设置为0，即`corePool`为空；`maximumPoolSize`被设置为`Integer.MAX_VALUE`，即`maximumPool`是无界的。这里把`keepAliveTime`设置为60L，意味着`CachedThreadPool`使用没有容量的`SynchronousQueu`作为线程池的工作队列，但`CachedThreadPool`的`maximumPool`是无界的。这意味着，如果主线程提交任务的速度高于`maximumPool`中线程处理任务的速度时，`CachedThreadPool`会不断创建线程。极端情况下，`CachedThreadPool`会因为创建过多线程而耗尽CPU和内存资源。
+
+`CachedThreadPool`的`execute()`方法的执行示意图：
+
+![cachedthreadpool_execute_flow](./images/cachedthreadpool_execute_flow.png)
+
+1. 首先执行`SynchronousQueue.offer(Runnable task)`。 如果当前`maximumPool`中有空闲线程正在执行`SynchronousQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS)`，那么主线程执行`offer`操作与空闲线程执行的`poll`操作配对成功，主线程把任务交给空闲线程执行，`execute()`方法执行完成；否则执行下面的步骤2。
+2. 当初始`maximumPool`为空，或者`maximumPool`中当前没有空闲线程时，将没有线程执行`SynchronousQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS)`。这种情况下，步骤1将失败。此时`CachedThreadPool`会创建一个新线程执行任务，`execute()`方法执行完成。
+3. 在步骤2中创建的线程将任务执行完后，会执行`SynchronousQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS)`。这个`poll`操作会让空线程最多在`SynchronousQueue`中等待60秒钟。如果60秒内主线程提交了一个新任务（主线程执行步骤1），那么这个空闲线程将执行主线程提交的新任务；否则，这个空闲线程将终止。由于空闲60秒的空闲线程会被终止，因此长时间保持空闲的`CachedThreadPool`不会使用任何资源。
+
+我们说，`SynchronousQueue`是一个没有容量的阻塞队列。每个插入操作必须等待另一个线程的对应移除操作，反之亦然。`CachedThreadPool`使用`SynchronousQueue`，把主线程提交的任务传递给空闲线程执行。`CachedThreadPool`中任务传递的示意图：
+
+![cachedthreadpool_convert_task](./images/cachedthreadpool_convert_task.png)
 
 ### ScheduledThreadPoolExecutor
+`ScheduledThreadPoolExecutor`继承自`ThreadPoolExecutor`。它主要用来在给定的延迟后运行任务，或者定期执行任务。 `ScheduledThreadPoolExecutor`的功能和`Timer`类似，但`ScheduledThreadPoolExecutor`功能更加强大，更灵活。`Timer`对应的是单个后台线程，而`ScheduledThreadPoolExecutor`可以在构造函数中指定多个对应的后台线程数。
 
 #### ScheduledThreadPoolExecutor的运行机制
+`ScheduledThreadPoolExecutor`的任务传递示意图：
+
+![scheduledthreadpoolexecutor_convert_task](./images/scheduledthreadpoolexecutor_convert_task.png)
+
+`DelayQueue`是一个无界队列，所以`ThreadPoolExecutor`的`maximumPoolSize`在`ScheduledThreadPoolExecutor`中没有意义（设置`maximumPoolSize`的大小没有效果）。
+
+`ScheduledThreadPoolExecutor`的任务主要分为两个部分：
+
+1. 当调用`ScheduledThreadPoolExecutor`的`scheduleAtFixedRate()`方法或者`scheduleWithFixedDelay()`方法时，会向`ScheduledThreadPoolExecutor`的`DelayQueue`添加一个实现了`RunnableScheduledFuture`接口的`ScheduledFutureTask`。
+2. 线程池中的线程从`DelayQueue`中获取`ScheduledFutureTask`，然后执行任务。
+
+`ScheduledThreadPoolExecutor`为了实现周期性执行任务，对`ThreadPoolExecutor`做了如下修改：
+1. 使用`DelayQueue`作为任务队列
+2. 获取任务的方式不同
+3. 执行周期任务后，增加了额外的处理。
 
 #### ScheduledThreadPoolExecutor的实现
+我们说，`ScheduledThreadPoolExecutor`会将待调度的任务（`ScheduledFutureTask`）放到一个`DelayQueue`中。
+
+`ScheduledFutureTask`主要包含3个成员变量：
+- long类型成员变量time, 表示这个任务将要被执行的具体时间
+- long类型成员变量sequenceNumber, 表示这个任务被添加到`ScheduledThreadPoolExecutor`中的序号
+- long类型成员变量period, 表示任务执行的间隔周期。
+
+`DelayQueue`封装了一个`PriorityQueue`，这个`PriorityQueue`会对队列中的`ScheduledFutureTask`进行排序。排序时，time小的排在前面（时间早的任务将先被执行）。如果两个`ScheduledFutureTask`的time相同，就比较`sequenceNumber`,`sequenceNumber`小的排在前面（也就是说，如果两个任务的执行时间相同，那么先提交的任务将被先执行）
+
+`SecheduledThreadPoolExecutor`中的线程执行周期任务的过程，下图是`SecheduledThreadPoolExecutor`中的线程1执行某个周期任务的四个步骤：
+
+![scheduledthreadpoolexecutor_execute_flow](./images/scheduledthreadpoolexecutor_execute_flow.png)
+
+1. 线程1从`DelayQueue`中获取已到期的`ScheduledFutureTask(DelayQueue.take)`。到期任务是指`ScheduledFutureTask`的`time`大于等于当前时间
+2. 线程1执行这个`ScheduledFutureTask
+3. 线程1修改`ScheduledFutureTask`的`time`变量为下次将要被执行的时间
+4. 线程1把这个修改`time`之后的`ScheduledFutureTask`放回`DelayQueue`中(`DelayQueue.add()`)
+
+下面我们展示1中任务的获取过程。下面是`DelayQueue.take()`方法的源代码实现：
+
+```java
+public E take() throws InterruptedException {
+    final ReentrantLock lock = this.lock;
+    lock.lockInterruptibly();	                                      															 
+    try {
+        for (;;) {
+            E first = q.peek();
+            if (first == null)
+                available.await();                                  
+            else {
+                long delay = first.getDelay(NANOSECONDS);      
+                if (delay <= 0)
+                    return q.poll();                               
+                first = null; // don't retain ref while waiting
+                if (leader != null)
+                    available.await();                             
+                else {
+                    Thread thisThread = Thread.currentThread();
+                    leader = thisThread;
+                    try {
+                        available.awaitNanos(delay);               
+                    } finally {
+                        if (leader == thisThread)
+                            leader = null;
+                    }
+                }
+            }
+        }
+    } finally {
+        if (leader == null && q.peek() != null)
+            available.signal();
+        lock.unlock();                                              
+    }
+}
+
+```
 
 ### FutureTask
-
+`Future`接口和其实现类`FutureTask`代表异步计算的结果。
 #### FutureTask简介
+`FutureTask`除了实现`Future`接口以外，还实现了`Runnable`接口。因此,`FutureTask`可以交由`Executor`执行，也可以由调用线程直接执行（`FutureTask.run()`）。根据`FutureTask.run()`方法被执行的时机，`FutureTask`可以处于下面三种状态：
+1. 未启动 `FutureTask.run()`方法还没有被执行前，`FutureTask`处于未启动状态。当创建一个`FutureTask`，且没有执行`FutureTask.run()`之前，这个`FutureTask`处于未启动状态
+2. 已启动 `FutureTask.run()`方法被执行的过程中，`FutureTask`处于未启动状态。
+3. 已完成 `FutureTask.run()`方法执行完后正常结束，或被取消`FutureTask.cancel()`或执行`FutureTask.run()`方法时抛出异常而结束，`FutureTask`处于已经完成状态。
+
+`FutureTask`状态迁移示意图：
+
+![futuretask_state_transfer](./images/futuretask_state_transfer.png)
+
 
 #### FutureTask使用
 
