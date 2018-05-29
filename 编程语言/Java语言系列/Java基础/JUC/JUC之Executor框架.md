@@ -271,7 +271,93 @@ public E take() throws InterruptedException {
 
 ![futuretask_state_transfer](./images/futuretask_state_transfer.png)
 
+当`FutureTask`处于未启动或已启动状态时，执行`FutureTask.get()`方法将导致调用线程阻塞；当`FutureTask`处于已完成状态时，执行`FutureTask.get()`方法将导致调用线程理解返回结果或抛出异常。
+
+当`FutureTask`处于未启动状态时，执行`FutureTask.cancel()`方法将导致此任务永远不会被执行；当`FutureTask`处于已启动状态时，执行`FutureTask.cancel(true)`方法将以中断执行此任务线程的方式来试图停止任务；当`FutureTask`处于已启动状态时，执行`FutureTask.cancel(false)`方法将不会对正在执行次任务的线程产生影响（让正在执行的任务运行完成）；当`FutureTask`处于已完成状态时，执行`FutureTask.cancel(...)`方法将返回false.。
+
+下图是`get`方法和`cancel`方法的执行示意图：
+
+![futuretask_get_cancel](./images/futuretask_get_cancel.png)
 
 #### FutureTask使用
+可以将`FutureTask`交给`Executor`运行；也可以通过`ExecutorService.submit(...)`方法返回一个`FutureTask`,然后执行`FutureTask.get()`方法或`FutureTask.cancel(...)`方法。除此以外，也可以单独使用`FutureTask`。
 
-#### FutureTask详解
+当一个线程需要等待另一个线程把某个任务执行完后它才能继续执行，此时可以使用`FutureTask`。假设有多个线程执行若干任务，每个任务最多只能被执行一次。当多个线程试图执行同一个任务时，只允许一个线程执行任务，其他线程需要等待这个任务执行完后才能继续执行。
+
+如下代码：
+
+```java
+private final ConcurrentMap<Object, Future<String>> taskCache = new ConcurrentHashMap<Object, Future<String>>();
+
+private String executeTask(final String taskName) throws ExecutionException, InterruptedException{
+	while(true) {
+		Future<String> future = taskCache.get(taskName); //1.1, 2.1
+		if(future == null) {
+			Callable<String> task = new Callable<String>(){
+				pubilc String call() throws InterruptedException {
+					return taskName;
+				}
+			};
+			
+			//1.2 创建任务
+			FutureTask<String> futureTask = new FutureTask<String>(task);
+			future = taskCache.putIfAbsent(taskName, futureTask); //1.3
+			if(future == null) {
+				future = futureTask;
+				futureTask.run(); //1.4
+			}
+		}
+		try{
+			return future.get(); //1.5, 2.2 线程在这里等待任务执行完成
+		}catch(CancellationException e) {
+			taskCache.remove(taskName, future);
+		}
+	}
+}
+```
+
+代码执行示意图;
+
+![code_execution](./images/code_execution.png)
+
+当两个线程试图同时执行同一个任务时，如果`Thread1`执行1.3后`Thread2`执行2.1,那么接下来`Thread2`将在2.2等待，知道`Thread1`执行完毕1.4后`Thread2`才能从2.2（FutureTask.get()）返回。
+
+
+### FutureTask实现
+`FutureTask`的实现基于`AbstractQueuedSynchronizer`( **AQS**)。`java.util.concurrent`中的很多可阻塞类（例如`ReentrantLock`)都是基于AQS实现的。 AQS是一个同步框架，它提供通用机制来原子性管理同步状态、阻塞和唤醒线程，以及维护被阻塞线程的队列。Java 8中AQS被广泛是应用，基于AQS实现的同步器包括: `ReentrantLock, Semaphore, ReentrantReadWriteLock, CountDownLatch`和`FutureTask`。
+
+
+每个基于AQS实现的同步器都会包含两种类型的操作：
+
+- 至少一个`acquire`操作。 这个操作阻塞调用线程，除非/直到AQS的状态允许这个线程继续执行。`FutureTask`的`acqiure`操作为`get()/get(long timeout, TimeUnit unit)`方法调用
+- 至少一个`release`操作。 这个操作改变AQS的状态，改变后的状态可以允许一个或多个阻塞线程被解除阻塞。`FutureTask`的`release`操作包括`run()`方法和`cancel()`方法。
+
+基于“复合优于继承”的原则，`FutureTask`声明了一个内部私有的继承于AQS的子类`Sync`，对`FutureTask`所有共有方法的调用都会委托给这个内部类。
+
+
+AQS被作为“模板方法模式”的基础类提供给`FutureTask`的内部子类`Sync`， 这个内部子类需要实现状态检查和状态更新的方法即可，这些方法将控制`FutureTask`的获取和释放操作。 具体说，`Sync`实现了AQS的`tryAcquireShared(int)`方法和`tryReleaseShared(int)`方法，`Sync`通过这两个方法来检查和更新同步状态。
+
+FutureTask的设计示意图：
+
+![futuretask_innder_desigin](./images/futuretask_innder_desigin.png)
+
+如图所示，`Sync`是`FutureTask`的内部私有类，它继承自AQS。 创建`FutureTask`时会创建内部私有的成员对象`Sync`，`FutureTask`所有的共有方法都直接委托给内部私有类`Sync`。
+
+`FutureTask.get()`方法会调用`AQS.acqiureSharedInterruptibly(int arg)`方法，这个方法执行过程如下：
+
+1. 调用`AQS.acqiureSharedInterruptibly(int arg)`方法, 这个方法首先会回调在子类`Sync`中实现的`tryAcquireShared()`方法来判断`acquire`操作是否成功。`acquire`操作可以成功的条件为：`state`为执行完成状态`RAN`或已取消状态`CANCELLED`，且`runner`不为`null`。
+2. 如果成功则`get()`方法立刻返回。如果失败则到线程等待队列中去等待其他线程执行`release`操作。
+3. 当其他线程执行`release`操作（例如`FutureTask.run()`或`FutureTask.cancel()`）唤醒当前线程后，当前线程再次执行`tryAcquireShared()`将返回正值1， 当前线程将离开线程等待队列并唤醒它的后继线程（这里会产生级联唤醒的效果）。
+4. 最后返回计算结果或抛出异常
+
+`FutureTask.run()`的执行过程如下：
+
+1. 执行在构造函数中指定的任务`Callable.call()`
+2. 以原子方式来更新同步状态（调用`AQS.compareAndSetState(int expect, int update)`，设置`state`为执行完成状态`RAN`）。如果这个原子操作成功，就设置代表计算结果的变量`result`的值为`Callable.call()`返回值，然后调用`AQS.releaseShared(int arg)`。
+3. `AQS.releasedShared(int arg)`首先会回调在子类`Sync`中实现的`tryReleaseShared(arg)`来执行`release`操作（设置运行任务的线程`runner`为`null`，然后返回`true`)；`AQS.releaseShared(int arg)`，然后唤醒线程等待队列中的第一个线程。
+4. 调用`FutureTask.done()`。
+
+当执行`FutureTask.get()`方法时，如果`FutureTask`不是处于执行完成状态`RAN`或已取消状态`CANCELLED`，当前执行线程将到`AQS`的线程等待队列中等待。将某个线程执行`FutureTask.run()`方法或`FutureTask.cancel()`方法时，会唤醒线程等待队列的第一个线程。
+
+![futuretask_casecade_wakeup](./images/futuretask_casecade_wakeup.png)
+
