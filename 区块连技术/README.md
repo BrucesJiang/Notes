@@ -5,6 +5,7 @@
 - [Decentralization的理解](./Decentralization的理解.md)
 - [加密经济学](./加密经济学.md)
 - [67 Blockchain Articles & Whitepapers that Shaped Crypto into What it is Today](./67BlockchainArticlesAndWhitepapers.md)
+- [consensus_and_where_it_used](./consensus_and_where_it_used.md)
 
 资源介绍
 - [比特币论文-英文版](https://bitcoincore.org/bitcoin.pdf)

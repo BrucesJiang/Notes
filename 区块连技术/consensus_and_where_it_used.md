@@ -1,0 +1,3 @@
+# Consensus Algorithm and Where it is Used
+
+1. Proof of Elapsed Time(PoET): Hyperledger Sawtooth使用的一种共识算法。该算法基于可信硬件Intel SGX，它将Intel的Software Guard Extensions(SGX)用于实现一个选举算法，而不是像Bitcoin那样使用算力解决密码学问题(cryptographic puzzles)。文章链接： [https://medium.com/kokster/understanding-hyperledger-sawtooth-proof-of-elapsed-time-e0c303577ec1](https://medium.com/kokster/understanding-hyperledger-sawtooth-proof-of-elapsed-time-e0c303577ec1)
