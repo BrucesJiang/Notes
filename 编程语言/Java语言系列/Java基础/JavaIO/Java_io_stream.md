@@ -10,9 +10,12 @@ Java IO流的实现类都存在于`java.io`包中（当然，这里需要排除`
 本文大致分为以下几个部分：
 
 1. 概述
-2. 文件
-3. Java的流模型
-4. 
+2. Java IO流的顶层设计
+3. 概念与模型
+4. 字节流
+5. 字符流
+6. 文件类
+7. System类提供的标准流
 
 ## 概述
 Java的IO通过`java.io`包下的类支持。在`java.io`包下主要包括输入和输出两种流，每种输入和输出流又可以分为两大类 **字节流** 和 **字符流**。 其中字节流以字节为单位处理输入/输出操作，而字节流则以字节为单位处理输入/输出操作。另外，Java的IO设计中使用了装饰器模式，它将IO流分为底层节点流和上层处理流，其中节点流用于和底层的物理存储节点直接关联——不同的物理节点获取节点流的方式可能存在一定的差异，但是Java IO流可以将不同的物理节点流包装成统一的处理流，从而允许程序使用统一的输入/输出操作代码来读取不同物理节点上的数据。
@@ -115,6 +118,24 @@ Java的IO模型设计非常优秀，它使用Decorator(装饰者)模式，按功
 3. `PipedInputStream`是从与其他线程共用的管道中读取数据
 4. `ObjectInputStream`和所有`FilterInputStream`的子类都是装饰流（装饰模式的主角）
 
+InputStream中的三个基本的读方法
+```java
+abstract int read() //读取一个字节数据，并返回读到的数据，如果返回-1，表示读到了输入流的末尾。
+int read(byte[] b)  //将数据读入一个字节数组，同时返回实际读取的字节数。如果返回-1，表示读到了输入流的末尾。
+int read(byte[] b, int off, int len) //将数据读入一个字节数组，同时返回实际读取的字节数。如果返回-1，表示读到了输入流的末尾。off指定在数组b中存放数据的起始偏移位置；len指定读取的最大字节数。
+```
+流结束的判断：方法read()的返回值为-1时；readLine()的返回值为null时。
+
+其它方法
+```java
+long skip(long n) //在输入流中跳过n个字节，并返回实际跳过的字节数。
+int available() //返回在不发生阻塞的情况下，可读取的字节数。
+void close() //关闭输入流，释放和这个流相关的系统资源。
+void mark(int readlimit) //在输入流的当前位置放置一个标记，如果读取的字节数多于readlimit设置的值，则流忽略这个标记。
+void reset() //返回到上一个标记。
+boolean markSupported()  //测试当前流是否支持mark和reset方法。如果支持，返回true，否则返回false。
+```
+
 ### 输出字节流
 我们知道，在上图一的字节输出流的继承体系中：
 1. `OutputStream`是所有字节输出流的父类，它是一个抽象类
@@ -122,6 +143,18 @@ Java的IO模型设计非常优秀，它使用Decorator(装饰者)模式，按功
 3. `PipedOutputStream`是向与其它线程共用的管道中写入数据  
 4. `ObjectOutputStream`和所有`FilterOutputStream`的子类都是装饰流
 
+outputStream中的三个基本的写方法
+```java
+abstract void write(int b) //往输出流中写入一个字节。
+void write(byte[] b) //往输出流中写入数组b中的所有字节。
+void write(byte[] b, int off, int len) //往输出流中写入数组b中从偏移量off开始的len个字节的数据。
+```
+
+其它方法
+```java
+void flush() //刷新输出流，强制缓冲区中的输出字节被写出
+void close() //关闭输出流，释放和这个流相关的系统资源
+```
 
 ## Java IO的字符流继承体系
 ### 输入字符流
@@ -134,7 +167,13 @@ Java的IO模型设计非常优秀，它使用Decorator(装饰者)模式，按功
 6. `InputStreamReader`是一个连接字节流和字符流的桥梁，它将字节流转变为字符流。`FileReader`可以说是一个达到此功能、常用的工具类，在其源代码中提供了将`FileInputStream`转变为`Reader`的方法。
 7. `Reader`继承体系中各个类的用途和使用方法和`InputStream`中的类使用基本一致。
 
+主要方法：
 
+```java
+public int read() throws IOException; //读取一个字符，返回值为读取的字符 
+public int read(char cbuf[]) throws IOException; /*读取一系列字符到数组cbuf[]中，返回值为实际读取的字符的数量*/ 
+public abstract int read(char cbuf[],int off,int len) throws IOException; /*读取len个字符，从数组cbuf[]的下标off处开始存放，返回值为实际读取的字符数量，该方法必须由子类实现*/ 
+```
 ### 输出字符流
 1. `Writer`是所有字符输入流的父类，它是一个抽象类
 2. `CharWriter`和`StringWriter`是两种基本的介质流，它们分别向`Char数组`和`String`中写入数据
@@ -144,7 +183,16 @@ Java的IO模型设计非常优秀，它使用Decorator(装饰者)模式，按功
 6. `OutputStreamWriter`是`OutputStream`到`Writer`转换的桥梁，它的子类`FileWriter`其实就是一个实现此功能的具体类。功能和使用和`OutputStream`极其类似
 
 
-字节流输入和输出之间的对应：
+主要方法：
+```java
+public void write(int c) throws IOException； //将整型值c的低16位写入输出流 
+public void write(char cbuf[]) throws IOException； //将字符数组cbuf[]写入输出流 
+public abstract void write(char cbuf[],int off,int len) throws IOException； //将字符数组cbuf[]中的从索引为off的位置处开始的len个字符写入输出流 
+public void write(String str) throws IOException； //将字符串str中的字符写入输出流 
+public void write(String str,int off,int len) throws IOException； //将字符串str 中从索引off开始处的len个字符写入输出流 
+```
+
+## 字节流输入和输出之间的对应
 
 ![byte_input_output_stream](./images/byte_input_output_stream.png)
 
