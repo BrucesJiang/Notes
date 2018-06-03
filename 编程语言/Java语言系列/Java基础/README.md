@@ -25,7 +25,7 @@
 > - [Java类之Object](./Java类之Object.md)
 >
 ### [Java IO Stream](./JavaIO)
->> - [Java IO Stream](./Java_io_stream.md)
+>> - [Java IO Stream](./JavaIO/Java_io_stream.md)
 >
 ### [Java Collection](./collection)
 >> - [Java Collection Framework 综述](./collection/Java集合类框架.md)
