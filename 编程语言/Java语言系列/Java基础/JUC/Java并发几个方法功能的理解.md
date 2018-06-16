@@ -25,10 +25,7 @@ public final void join() throws InterruptedException Waits for this thread to di
 `
 
 `t.join()/t.join(long millis)`，当前线程里调用`线程1`的`join`方法，当前线程阻塞，但不释放对象锁，直到`线程1`执行完毕或者`millis时间到`，当前线程进入可运行状态。
-
-主要的含义是**等待该线程的终止**，这里需要解释的是该线程指的是主线程等待子线程的终止。也就是主线程中位于子线程调用`join()`方法后面的代码，只有等到子线程结束后才能执行。
-
-
+如果一个线程A执行了thread.join()语句，其含义是：当前线程A等待thread线程终止之后才从thread.join()返回。线程Thread除了提供join()方法之外，还提供了join(long millis)和join(longmillis,int nanos)两个具备超时特性的方法。这两个超时方法表示，如果线程thread在给定的超时时间里没有终止，那么将会从该超时方法中返回。当线程终止时，会调用线程自身的notifyAll()方法，会通知所有等待在该线程对象上的线程。
 
 ## wait，notify和notifyAll
 这三个方法都是`Object`类的实例方法。它们必须是由同步监视器（也就是`syncrynized`包围的那个对象)来调用, 用于协调多个线程对共享数据的存取。`synchronized`关键字用于保护共享数据，阻止其他线程对共享数据的存取，但是这样程序的流程就很不灵活了，如何才能在当前线程还没退出`synchronized`数据块时让其他线程也有机会访问共享数据呢？此时就用这三个方法来灵活控制。
