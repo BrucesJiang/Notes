@@ -59,4 +59,6 @@
 >> - [锁、同步和信号量](./JUC/锁同步和信号量.md)
 >> - [线程间的通信](./JUC/线程间的通信.md)
 >> - [Java并发几个方法功能的理解](./JUC/Java并发几个方法功能的理解.md)
+>> - [Java线程的生命周期](./Java线程的生命周期.md)
 >
+>> - [Reflection in Java](./Reflection_in_java.md)
