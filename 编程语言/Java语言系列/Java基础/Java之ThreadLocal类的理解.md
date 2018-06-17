@@ -45,6 +45,7 @@ From [Java API](https://docs.oracle.com/javase/8/docs/api/java/lang/ThreadLocal.
 2. 使用时，`ThreadLocal`变量通常为`private static`。
 
 
+
 # （二）ThreadLocal的实现原理
 从源代码的角度分析ThreadLocal的实现原理。  以下几点：
 
@@ -53,6 +54,70 @@ From [Java API](https://docs.oracle.com/javase/8/docs/api/java/lang/ThreadLocal.
 最朴素的想法，在每个为每个线程中`ThreadLocal`实例对象都重新分配一个数据空间。这个过程在该线程第一次调用`ThreadLocal`对象的`get()`方法时得到实现，`ThreadLocal`实例对象重新开辟数据空间。 我们说，对于每个线程而言，它保存的`ThreadLocal`实例对象的引用和另外一个线程是不同的。这种实现机制由以下几个函数实现。
 
 ![threadlocal](./images/threadlocal.png)
+
+与上图匹配的小例子：
+
+```java
+import java.util.concurrent.CountDownLatch;
+
+public class ThreadLocalTest {
+	public static void main(String[] args) throws Exception{
+		final int threads = 3;
+
+		CountDownLatch countDownLatch = new CountDownLatch(threads);
+		InnerClass innerClass = new InnerClass();
+		for (int i = 0; i < threads; i++) {
+			new Thread(() -> {
+				for (int j = 0; j < 4; j++) {
+					innerClass.add(String.valueOf(j));
+					innerClass.print();
+				}
+				innerClass.set("Hello World");
+				countDownLatch.countDown();
+			}, "Thread-" + i).start();
+		}
+		countDownLatch.await();
+	}
+
+	private static class InnerClass {
+		public void add(String str) {
+			StringBuilder nStr = Counter.counter.get();
+			Counter.counter.set(nStr.append(str));
+		}
+		
+		public void print() {
+			System.out
+					.printf("Thread name: %s, ThreadLocal hashCode: %s, Instance hashcode: %s, Value: %s\n",
+							Thread.currentThread().getName(), Counter.counter
+									.hashCode(), Counter.counter.get().hashCode(),
+							Counter.counter.get().toString());
+		}
+
+		public void set(String words) {
+			Counter.counter.set(new StringBuilder(words));
+			Counter.counter.set(new StringBuilder(words));
+			System.out
+					.printf("Set, Thread name:%s , ThreadLocal hashcode:%s,  Instance hashcode:%s, Value:%s\n",
+							Thread.currentThread().getName(), Counter.counter
+									.hashCode(), Counter.counter.get().hashCode(),
+							Counter.counter.get().toString());
+		}
+	}
+
+	private static class Counter {
+		private static ThreadLocal<StringBuilder> counter = new ThreadLocal<StringBuilder>(){
+			@Override
+			protected StringBuilder initialValue() {
+				return new StringBuilder();
+			}
+		};
+	}
+}
+
+
+```
+
+从源代码看：
 
 ```java
 public T get() {
