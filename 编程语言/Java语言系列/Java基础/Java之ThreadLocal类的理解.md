@@ -232,3 +232,8 @@ public class SessionHandler {
 - ThreadLocalMap 的 set 方法通过调用 replaceStaleEntry 方法回收键为 null 的 Entry 对象的值（即为具体实例）以及 Entry 对象本身从而防止内存泄漏
 - ThreadLocal 适用于变量在线程间隔离且在方法间共享的场景
 
+# 一些文章
+
+- [Java Doc](https://docs.oracle.com/javase/7/docs/api/java/lang/ThreadLocal.html)
+- [ThreadLocal理解](https://www.cnblogs.com/jasongj/p/8079718.html)
+- 
