@@ -23,6 +23,7 @@
 > - [Java String深入理解之一](./JavaString深入理解之一.md)
 > - [Java String深入理解之二](./JavaString深入理解之二.md)
 > - [Java类之Object](./Java类之Object.md)
+> - [Java之equals和hashCode方法](./Java之equals和hashCode方法.md)
 >
 ### [Java IO Stream](./JavaIO)
 >> - [Java NIO](./JavaIO/nio/README.md)
@@ -55,6 +56,7 @@
 >> - [JUC提供的并发工具类](./JUC/JUC提供的并发工具类.md)
 >> - [JUC之线程池](./JUC/JUC之线程池.md)
 >> - [JUC之Executor框架](./JUC/JUC之Executor框架.md)
+>> - [JUC之ConcurrentHashMap类](./JUC/JUC之ConcurrentHashMap.md)
 >> - [对并发编程的理解](./JUC/对并发编程的理解.md)
 >> - [锁、同步和信号量](./JUC/锁同步和信号量.md)
 >> - [线程间的通信](./JUC/线程间的通信.md)
