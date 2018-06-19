@@ -323,6 +323,56 @@ private String executeTask(final String taskName) throws ExecutionException, Int
 当两个线程试图同时执行同一个任务时，如果`Thread1`执行1.3后`Thread2`执行2.1,那么接下来`Thread2`将在2.2等待，知道`Thread1`执行完毕1.4后`Thread2`才能从2.2（FutureTask.get()）返回。
 
 
+更具体的代码示例：
+
+```java
+public class FutureTaskTest {
+  public static void main(String[] args) {
+    Callable<String> task = new Callable<String>() {
+      public String call() {
+        System.out.println("Sleep start.");
+        try {
+          Thread.sleep(1000 * 10);
+        } catch (InterruptedException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        System.out.println("Sleep end.");
+        return "time=" + System.currentTimeMillis();
+      }
+    };
+    
+    //直接使用Thread的方式执行
+    FutureTask<String> ft = new FutureTask<String>(task);
+    Thread t = new Thread(ft);
+    t.start();
+    try {
+      System.out.println("waiting execute result");
+      System.out.println("result = " + ft.get());
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+    
+    //使用Executors来执行
+    System.out.println("=========");
+    FutureTask<String> ft2 = new FutureTask<String>(task);
+    Executors.newSingleThreadExecutor().submit(ft2);
+    try {
+      System.out.println("waiting execute result");
+      System.out.println("result = " + ft2.get());
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+    
+  }
+}
+```
+
+
 ### FutureTask实现
 `FutureTask`的实现基于`AbstractQueuedSynchronizer`( **AQS**)。`java.util.concurrent`中的很多可阻塞类（例如`ReentrantLock`)都是基于AQS实现的。 AQS是一个同步框架，它提供通用机制来原子性管理同步状态、阻塞和唤醒线程，以及维护被阻塞线程的队列。Java 8中AQS被广泛是应用，基于AQS实现的同步器包括: `ReentrantLock, Semaphore, ReentrantReadWriteLock, CountDownLatch`和`FutureTask`。
 
@@ -360,4 +410,116 @@ FutureTask的设计示意图：
 当执行`FutureTask.get()`方法时，如果`FutureTask`不是处于执行完成状态`RAN`或已取消状态`CANCELLED`，当前执行线程将到`AQS`的线程等待队列中等待。将某个线程执行`FutureTask.run()`方法或`FutureTask.cancel()`方法时，会唤醒线程等待队列的第一个线程。
 
 ![futuretask_casecade_wakeup](./images/futuretask_casecade_wakeup.png)
+
+
+
+## 区分Callable和Runnable
+
+首先需要强调的是，在Java 5之后，线程的创建方式会增加一种变为三种，分别是： `Callable, Runnable和Thread`。 这里我们主要区别`Callable和Runnable`。 并且，通过一个小例子来解读`Runnable, Callable, Executor, Future`之间的关系。
+
+首先区分`Callable和Runnable`:
+
+1. `Callable`规定的方法是`call()`,而`Runnable`规定的方法是`run()`
+2. `Callable`的任务执行后可以返回执行结果，而`Runnable`的任务不能用返回结果
+3. `call()`方法可以抛出异常，`run()`方法不可以
+4. `Callable`一般都是提交给`Executor`执行，但是`Runnable`除了可以提交给`Executor`执行以外，还可提交给`Thread`，包装后直接启动一个线程执行
+5. 运行`Callable`任务可以拿到一个`Future`对象，表示异步计算的结果。它提供了检查计算是否完成的方法，以等待计算的完成，并检索计算的结果。通过`Future`对象可以了解任务执行情况，可取消任务的执行，还可获取执行结果。
+
+简单来说，`Executor`就是`Runnable`和`Callable`的调度容器，`Future`就是对于具体的调度任务的执行结果进行查看，最为关键的是`Future`可以检查对应的任务是否已经完成，也可以阻塞在`get`方法上一直等待任务返回结果。`Runnable`和`Callable`的差别就是`Runnable`是没有结果可以返回的，就算是通过`Future`也看不到任务调度的结果的。 
+
+下面代码示例体现了上面的解释：
+
+```java
+/**
+ * 通过简单的测试程序来试验Runnable、Callable通过Executor来调度的时候与Future的关系
+ */
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class RunnableAndCallable2Future {
+
+  public static void main(String[] args) {
+
+    // 创建一个执行任务的服务
+    ExecutorService executor = Executors.newFixedThreadPool(3);
+    try {
+      //1.Runnable通过Future返回结果为空
+      //创建一个Runnable，来调度，等待任务执行完毕，取得返回结果
+      Future<?> runnable1 = executor.submit(new Runnable() {
+        @Override
+        public void run() {
+          System.out.println("runnable1 running.");
+        }
+      });
+      System.out.println("Runnable1:" + runnable1.get());
+
+      // 2.Callable通过Future能返回结果
+      //提交并执行任务，任务启动时返回了一个 Future对象，
+      // 如果想得到任务执行的结果或者是异常可对这个Future对象进行操作
+      Future<String> future1 = executor.submit(new Callable<String>() {
+        @Override
+        public String call() throws Exception {
+          // TODO Auto-generated method stub
+          return "result=task1";
+        }
+      });
+      // 获得任务的结果，如果调用get方法，当前线程会等待任务执行完毕后才往下执行
+      System.out.println("task1: " + future1.get());
+
+      //3. 对Callable调用cancel可以对对该任务进行中断
+      //提交并执行任务，任务启动时返回了一个 Future对象，
+      // 如果想得到任务执行的结果或者是异常可对这个Future对象进行操作
+      Future<String> future2 = executor.submit(new Callable<String>() {
+        @Override
+        public String call() throws Exception {       
+          try {
+            while (true) {
+              System.out.println("task2 running.");
+              Thread.sleep(50);
+            }
+          } catch (InterruptedException e) {
+            System.out.println("Interrupted task2.");
+          }
+          return "task2=false";
+        }
+      });
+      
+      // 等待5秒后，再停止第二个任务。因为第二个任务进行的是无限循环
+      Thread.sleep(10);
+      System.out.println("task2 cancel: " + future2.cancel(true));
+
+      // 4.用Callable时抛出异常则Future什么也取不到了
+      // 获取第三个任务的输出，因为执行第三个任务会引起异常
+      // 所以下面的语句将引起异常的抛出
+      Future<String> future3 = executor.submit(new Callable<String>() {
+
+        @Override
+        public String call() throws Exception {
+          throw new Exception("task3 throw exception!");
+        }
+
+      });
+      System.out.println("task3: " + future3.get());
+    } catch (Exception e) {
+      System.out.println(e.toString());
+    }
+    // 停止任务执行服务
+    executor.shutdownNow();
+  }
+}
+
+```
+执行结果：
+
+```java
+runnable1 running.
+Runnable1:null
+task1: result=task1
+task2 running.
+task2 cancel: true
+Interrupted task2.
+java.util.concurrent.ExecutionException: java.lang.Exception: task3 throw exception!
+```
 
