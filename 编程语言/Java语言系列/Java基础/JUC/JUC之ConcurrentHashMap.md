@@ -1,10 +1,9 @@
 # JUC之ConcurrentHashMap
-在理解`ConcurrentHashMap`之前，首先问问自己为什么提供了`HashMap`还要提供`ConcurrentHashMap`？回答当然是`HashMap`不是线程安全的。 因此，本文在具体理解`ConcurrentHashMap`之前，首先会梳理自己理解的`HashMap`为什么不安全。 然后，讲述了`ConcurrentHashMap`在Java 6, Java 7和Java 8中实现的区别，其中重点在Java 7的分段锁机制和Java 8的CAS机制。 本文并不会都深入到源码级别进行梳理，更多的是总结对比。
+在理解`ConcurrentHashMap`之前，首先问问自己为什么提供了`HashMap`还要提供`ConcurrentHashMap`？回答当然是`HashMap`不是线程安全的。 因此，本文在具体理解`ConcurrentHashMap`之前，首先会梳理自己理解的`HashMap`为什么不安全。 然后，讲述了`ConcurrentHashMap`在Java 7和Java 8中实现的区别，其中重点在Java 7的分段锁机制和Java 8的CAS机制。 本文并不会都深入到源码级别进行梳理，更多的是总结对比。
 
 * [为什么HashMap不安全](#一为什么HashMap不安全)
-* [ConcurrentHashMap在Java6中的实现](#二ConcurrentHashMap在Java6中的实现)
-* [ConcurrentHashMap在Java7中的实现](#三ConcurrentHashMap在Java7中的实现)
-* [ConcurrentHashMap在Java8中的实现](#四ConcurrentHashMap在Java8中的实现)
+* [ConcurrentHashMap在Java7中的实现](#二ConcurrentHashMap在Java7中的实现)
+* [ConcurrentHashMap在Java8中的实现](#三ConcurrentHashMap在Java8中的实现)
 
 # （一）为什么HashMap不安全
 
@@ -155,15 +154,193 @@ void transfer(Entry[] newTable, boolean rehash) {
 
 我们假设有两个线程同时需要执行`resize`操作，我们原来的桶数量为`2`，记录数为`3`，需要`resize`桶数量到`4`，原来的记录分别为：`[3,A],[7,B],[5,C]`，在原来的`map`里面，我们发现这三个`entry`都落到了第二个桶里面。 假设线程`thread1`执行到了`transfer`方法的`Entry next = e.next`这一句，然后时间片用完了，此时的`e = [3,A], next = [7,B]`。线程`thread2`被调度执行并且顺利完成了`resize`操作，需要注意的是，此时的`[7,B]`的后继`next`为`[3,A]`。如果此时线程`thread1`重新被调度运行，那么它持有的引用是已经被`thread2 resize`之后的结果。线程`thread1`首先将`[3,A]`迁移到新的数组上，然后再处理其后继`[7,B]`。 此时，`[3,A]`和`[7,B]`形成了`循环链表`，在`get()`时，如果`get`的`key`的桶索引和`[3,A]`和`[7,B]`一样，那么就会陷入死循环。
 
-# （二）ConcurrentHashMap在Java6中的实现
-待续
 
-# （三）ConcurrentHashMap在Java7中的实现
+3. Fast-fail
+产生原因， 在使用迭代器的过程中如果`HashMap`被修改，那么`ConcurrentModificationException`将被抛出，也即`Fast-fail`策略。
+
+当HashMap的iterator()方法被调用时，会构造并返回一个新的EntryIterator对象，并将EntryIterator的expectedModCount设置为HashMap的modCount（该变量记录了HashMap被修改的次数）。
+
+```java
+HashIterator() {
+  expectedModCount = modCount;
+  if (size > 0) { // advance to first entry
+  Entry[] t = table;
+  while (index < t.length && (next = t[index++]) == null)
+    ;
+  }
+}
+```
+在通过该Iterator的next方法访问下一个Entry时，它会先检查自己的expectedModCount与HashMap的modCount是否相等，如果不相等，说明HashMap被修改，直接抛出ConcurrentModificationException。该Iterator的remove方法也会做类似的检查。该异常的抛出意在提醒用户及早意识到线程安全问题。
+
+## 线程安全的解决方案： 
+
+单线程条件下，为避免出现ConcurrentModificationException，需要保证只通过HashMap本身或者只通过Iterator去修改数据，不能在Iterator使用结束之前使用HashMap本身的方法修改数据。因为通过Iterator删除数据时，HashMap的modCount和Iterator的expectedModCount都会自增，不影响二者的相等性。如果是增加数据，只能通过HashMap本身的方法完成，此时如果要继续遍历数据，需要重新调用iterator()方法从而重新构造出一个新的Iterator，使得新Iterator的expectedModCount与更新后的HashMap的modCount相等。
+
+多线程条件下，可使用`Collections.synchronizedMap`方法构造出一个同步`Map`，或者直接使用线程安全的`ConcurrentHashMap`。
+
+# （二）ConcurrentHashMap在Java7中的实现
+
+Java 7中`ConcurrentHashMap`的底层数据结构是`数组+链表`。 为了实现高并发，Java 7为`ConcurrentHashMap`引入了分段锁技术，也因此造成了其索引数组与`HashMap`略微不同。 `ConcurrentHashMap`而是分为两层，第一层为`Segment`分段锁数组，`Segment`数组中的每个元素负责管理一段`HashEntry`索引数组用于索引元素。整体的数据结果如下图所示。
+
+![datastructure_concurrenthashmap_java7](./images/datastructure_concurrenthashmap_java7.png)
+
+下面，我们具体说明上述数据结构如何工作：
+
+## 检索元素
+在读写Key-Value对时，首先获取Key的哈希值。然后将哈希值的高sshift位对Segment长度取模，从而得到该Key-Value在Segment管理的Key-Value元素子集中。 紧接着根据Key-Value中Key的哈希值在HasHEntry中索引元素所在链表，再根据链表索引Value。 在上述过程中，我们需要着重关注获取Key哈希值的过程，因为这里直接决定了检索元素整个过程的效率。 
+
+为了保证不同的Key值被均匀散列到不同的`Segment`中，`ConcurrentHashMap`采取了如下算法计算Key的哈希值：
+
+```java
+private int hash(Object k) {
+  int h = hashSeed;
+  if ((0 != h) && (k instanceof String)) {
+    return sun.misc.Hashing.stringHash32((String) k);
+  }
+  h ^= k.hashCode();
+  h += (h <<  15) ^ 0xffffcd7d;
+  h ^= (h >>> 10);
+  h += (h <<   3);
+  h ^= (h >>>  6);
+  h += (h <<   2) + (h << 14);
+  return h ^ (h >>> 16);
+}
+```
+
+我们从`get(Key)` 方法中来看`ConcurrentHashMap`是如何通过两级索引实现元素检索。
+
+```java
+public V get(Object key) {
+    Segment<K,V> s; // manually integrate access methods to reduce overhead
+    HashEntry<K,V>[] tab;
+    int h = hash(key); //(1)
+    long u = (((h >>> segmentShift) & segmentMask) << SSHIFT) + SBASE; // (2)
+    if ((s = (Segment<K,V>)UNSAFE.getObjectVolatile(segments, u)) != null && (tab = s.table) != null) { (3)
+        for (HashEntry<K,V> e = (HashEntry<K,V>) UNSAFE.getObjectVolatile(tab, ((long)(((tab.length - 1) & h)) << TSHIFT) + TBASE); e != null; e = e.next) { //（4）
+            K k;
+            if ((k = e.key) == key || (e.hash == h && key.equals(k)))
+                return e.value;
+        }
+    }
+    return null;
+}
+```
+
+我们解释一下上述源代码，在该代码中`(1)`步计算Key的哈希值，第`(2)`步计算元素在`Segment`数组中的索引；第`(3)`步定位`Segment[u]`；第`(4)`步在`HashEntry`数组中定位元素所在的链表。
 
 
-# （四）ConcurrentHashMap在Java8中的实现
+## 同步的实现
+
+`Segment`继承自`ReentrantLock`，所以我们可以很方便的对每一个`Segment`上锁。
+
+对于读操作，获取`Key`所在的`Segment`时，需要保证可见性。具体实现上可以使用`volatile`关键字，也可使用锁。但使用锁开销太大，使用`volatile`时每次写操作都会让所有CPU内缓存无效，也有一定开销。`ConcurrentHashMap`使用如下方法保证可见性，取得最新的`Segment`。
+
+```java
+Segment<K,V> s = (Segment<K,V>)UNSAFE.getObjectVolatile(segments, u)
+```
+
+获取`Segment`中的`HashEntry`时也使用了类似方法
+
+```java
+HashEntry<K,V> e = (HashEntry<K,V>) UNSAFE.getObjectVolatile(tab, ((long)(((tab.length - 1) & h)) << TSHIFT) + TBASE)
+```
+
+对于写操作，并不要求同时获取所有`Segment`的锁，因为那样相当于锁住了整个`Map`。它会先获取该`Key-Value`对所在的`Segment`的锁，获取成功后就可以像操作一个普通的`HashMap`一样操作该`Segment`，并保证该`Segment`的安全性。同时由于其它`Segment`的锁并未被获取，因此理论上可支持`concurrencyLevel`（等于`Segment`的个数）个线程安全的并发读写。
+
+获取锁时，并不直接使用lock来获取，因为该方法获取锁失败时会挂起（参考可重入锁）。事实上，它使用了自旋锁，如果tryLock获取锁失败，说明锁被其它线程占用，此时通过循环再次以tryLock的方式申请锁。如果在循环过程中该Key所对应的链表头被修改，则重置retry次数。如果retry次数超过一定值，则使用lock方法申请锁。
+
+这里使用自旋锁是因为自旋锁的效率比较高，但是它消耗CPU资源比较多，因此在自旋次数超过阈值时切换为互斥锁。
+
+
+### size操作
+
+put、remove和get操作只需要关心一个Segment，而size操作需要遍历所有的Segment才能算出整个Map的大小。一个简单的方案是，先锁住所有Sgment，计算完后再解锁。但这样做，在做size操作时，不仅无法对Map进行写操作，同时也无法进行读操作，不利于对Map的并行操作。
+
+为更好支持并发操作，ConcurrentHashMap会在不上锁的前提逐个Segment计算3次size，如果某相邻两次计算获取的所有Segment的更新次数（每个Segment都与HashMap一样通过modCount跟踪自己的修改次数，Segment每修改一次其modCount加一）相等，说明这两次计算过程中无更新操作，则这两次计算出的总size相等，可直接作为最终结果返回。如果这三次计算过程中Map有更新，则对所有Segment加锁重新计算Size。该计算方法代码如下
+
+
+```java
+public int size() {
+  final Segment<K,V>[] segments = this.segments;
+  int size;
+  boolean overflow; // true if size overflows 32 bits
+  long sum;         // sum of modCounts
+  long last = 0L;   // previous sum
+  int retries = -1; // first iteration isn't retry
+  try {
+    for (;;) {
+      if (retries++ == RETRIES_BEFORE_LOCK) {
+        for (int j = 0; j < segments.length; ++j)
+          ensureSegment(j).lock(); // force creation
+      }
+      sum = 0L;
+      size = 0;
+      overflow = false;
+      for (int j = 0; j < segments.length; ++j) {
+        Segment<K,V> seg = segmentAt(segments, j);
+        if (seg != null) {
+          sum += seg.modCount;
+          int c = seg.count;
+          if (c < 0 || (size += c) < 0)
+            overflow = true;
+        }
+      }
+      if (sum == last)
+        break;
+      last = sum;
+    }
+  } finally {
+    if (retries > RETRIES_BEFORE_LOCK) {
+      for (int j = 0; j < segments.length; ++j)
+        segmentAt(segments, j).unlock();
+    }
+  }
+  return overflow ? Integer.MAX_VALUE : size;
+}
+```
+ConcurrentHashMap与HashMap相比，有以下不同点
+
+- ConcurrentHashMap线程安全，而HashMap非线程安全
+- HashMap允许Key和Value为null，而ConcurrentHashMap不允许
+- HashMap不允许通过Iterator遍历的同时通过HashMap修改，而ConcurrentHashMap允许该行为，并且该更新对后续的遍历可见
+
+# （三）ConcurrentHashMap在Java8中的实现
+
+Java 7为实现并行访问，引入了Segment这一结构，实现了分段锁，理论上最大并发度与Segment个数相等。Java 8为进一步提高并发性，摒弃了分段锁的方案，而是直接使用一个大的数组。同时为了提高哈希碰撞下的寻址性能，Java 8在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为O(N)）转换为红黑树（寻址时间复杂度为O(long(N))）。其数据结构如下图所示
+
+![datastructure_concurrenthashmap_java8](./images/datastructure_concurrenthashmap_java8.png)
+
+## 寻址方式
+
+`Java 8`的`ConcurrentHashMap`同样是通过`Key`的哈希值与数组长度取模确定该Key在数组中的索引。同样为了避免不太好的`Key`的`hashCode`设计，它通过如下方法计算得到Key的最终哈希值， 将Key的hashCode值与其高16位作异或并保证最高位为0（从而保证最终结果为正整数）。
+
+```java
+static final int spread(int h) {
+  return (h ^ (h >>> 16)) & HASH_BITS;
+}
+```
+
+## 同步方式
+对于put操作，如果Key对应的数组元素为null，则通过CAS操作将其设置为当前值。如果Key对应的数组元素（也即链表表头或者树的根元素）不为null，则对该元素使用synchronized关键字申请锁，然后进行操作。如果该put操作使得当前链表长度超过一定阈值，则将该链表转换为树，从而提高寻址效率。
+
+对于读操作，由于数组被volatile关键字修饰，因此不用担心数组的可见性问题。同时每个元素是一个Node实例（Java 7中每个元素是一个HashEntry），它的Key值和hash值都由final修饰，不可变更，无须关心它们被修改后的可见性问题。而其Value及对下一个元素的引用由volatile修饰，可见性也有保障
+
+对于Key对应的数组元素的可见性，由Unsafe的getObjectVolatile方法保证。
+
+```java
+static final <K,V> Node<K,V> tabAt(Node<K,V>[] tab, int i) {
+  return (Node<K,V>)U.getObjectVolatile(tab, ((long)i << ASHIFT) + ABASE);
+}
+
+```
+
+## size操作
+
+put方法和remove方法都会通过addCount方法维护Map的size。size方法通过sumCount获取由addCount方法维护的Map的size。
 
 
 # Reference 
 
+- Java 7 与 Java 8 源码
 - [谈谈HashMap线程不安全的体现](http://www.importnew.com/22011.html)
+- [HashMap实现原理即源码分析](http://www.cnblogs.com/chengxiao/p/6059914.html)
