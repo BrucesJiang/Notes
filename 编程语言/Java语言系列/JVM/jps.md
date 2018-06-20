@@ -6,7 +6,7 @@
 Java命令都在JDK的`$JAVA_HOME/bin`目录下，`jps`也不例外是Java自带的命令。
 
 ## 功能
-`jsp(Java Virtual Machine Process Status Tool)是从JDK 1.5开始提供的一个显示当前所有Java进程PID的命令。
+`jsp(Java Virtual Machine Process Status Tool)`是从JDK 1.5开始提供的一个显示当前所有Java进程PID的命令。
 
 ## 原理
 Java程序起动后，会在`java.io.tmpdir`指定的目录下生成一个名称类似与`hsperfdata\_user`的临时文件夹，这个文件夹里（Linux系统中为`/tmp/hsperfdata_${userName}`）有几个文件，名称就是当前运行Java进程的PID，因此列出当前运行的Java进程，就是将这个目录里的文件名进行罗列。如果添加参数，则是将这几个文件进行相关的解析。

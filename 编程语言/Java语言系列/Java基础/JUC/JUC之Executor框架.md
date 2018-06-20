@@ -216,7 +216,7 @@ public static ExecutorService newCachedThreadPool() {
 ![scheduledthreadpoolexecutor_execute_flow](./images/scheduledthreadpoolexecutor_execute_flow.png)
 
 1. 线程1从`DelayQueue`中获取已到期的`ScheduledFutureTask(DelayQueue.take)`。到期任务是指`ScheduledFutureTask`的`time`大于等于当前时间
-2. 线程1执行这个`ScheduledFutureTask
+2. 线程1执行这个`ScheduledFutureTask`
 3. 线程1修改`ScheduledFutureTask`的`time`变量为下次将要被执行的时间
 4. 线程1把这个修改`time`之后的`ScheduledFutureTask`放回`DelayQueue`中(`DelayQueue.add()`)
 

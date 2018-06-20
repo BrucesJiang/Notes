@@ -7,7 +7,7 @@ Java生态相关的知识笔记。
 
 - [Java技术文章](./Java技术文章/README.md)
 
-- [Java提供的JVM监视工具以及命令](./JVM监视工具以及命令/README.md)
+- [JVM](./JVM/README.md)
 
 
 
