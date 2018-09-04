@@ -65,6 +65,7 @@
 >> - [Java并发几个方法功能的理解](./JUC/Java并发几个方法功能的理解.md)
 >> - [Java线程的生命周期](./JUC/Java线程的生命周期.md)
 >> - [Java中生产者消费者模式的几种实现方式](./JUC/Java中生产者消费者模式的几种实现方式.md)
+>> - [同步数组之CopyOnWriteList](./JUC/同步数组之CopyOnWriteArrayList.md)
 >
 >> - [Reflection in Java](./Reflection_in_java.md)
 >> - [Java之ThreadLocal类的理解](./Java之ThreadLocal类的理解.md)
